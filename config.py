@@ -10,6 +10,8 @@ class Config(object):
     DB_PASSWORD = ''
     DB_HOST = 'localhost'
 
+    ALLOWED_EXTENSIONS = ['xlsx', 'xls', 'csv']
+
 
 
 class ProductionConfig(Config):
