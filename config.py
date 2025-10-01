@@ -5,7 +5,7 @@ class Config(object):
     SECRET_KEY = 'This is the secret key'
 
     # Database Details
-    DB_NAME = 'casual_payment'
+    DB_NAME = 'casual_payments'
     DB_USERNAME = 'root'
     DB_PASSWORD = ''
     DB_HOST = 'localhost'
