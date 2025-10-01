@@ -12,3 +12,9 @@ def db_connection():
                            database=app.config["DB_NAME"])
     cursor = conn.cursor()
     return conn, cursor
+
+
+def allowed_file(filename):
+    return ('.' in filename and
+            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS'])
+
