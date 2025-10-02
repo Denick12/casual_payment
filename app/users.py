@@ -77,5 +77,5 @@ def attendance_list_upload():
             finally:
                 cursor.close()
                 conn.close()
-                return redirect(url_for('attendance_list'))
+                return redirect(url_for('attendance_list_upload'))
     return render_template('users.html')
