@@ -13,8 +13,8 @@
             Uploads
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="#">Attendance List</a></li>
-            <li><a class="dropdown-item" href="#">Advance</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('list_upload', list_category='Attendance') }}">Attendance List</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('list_upload', list_category='Advance') }}">Advance</a></li>
 
           </ul>
         </li>

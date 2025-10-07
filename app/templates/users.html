@@ -43,7 +43,7 @@
                 <div class="">
                     <p class="attendance-list fw-bold">Attendance List Upload</p>
 
-                    <form action="{{ url_for('attendance_list_upload') }}" method="post" enctype="multipart/form-data">
+                    <form action="{{ url_for('list_upload', list_category=list_category) }}" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="file" id="attendance_list" name="attendance_list" class="form-control mb-3" required>
                         <button type="submit" class="btn btn-success">Submit</button>

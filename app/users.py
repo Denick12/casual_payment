@@ -23,8 +23,8 @@ def allowed_file(filename):
             filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS'])
 
 
-@app.route('/attendance_list_upload', methods=['GET', 'POST'])
-def attendance_list_upload():
+@app.route('/list_upload/<list_category>', methods=['GET', 'POST'])
+def list_upload(list_category):
     if request.method == 'POST':
         conn, cursor = db_connection()
         file = request.files['attendance_list']
@@ -77,5 +77,5 @@ def attendance_list_upload():
             finally:
                 cursor.close()
                 conn.close()
-                return redirect(url_for('attendance_list_upload'))
-    return render_template('users.html')
+                return redirect(url_for('list_upload', list_category=list_category))
+    return render_template('users.html', list_category=list_category)
