@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    {% include 'head.html' %}
     <title>Attendance list upload</title>
-
- {% include 'head.html' %}
- {% include 'navbar.html' %}
 
 </head>
 <style>
@@ -28,34 +25,40 @@
         margin-bottom: 10px;
 
     }
-    .attendance-list{
+
+    .attendance-list {
         margin-top: 5px;
     }
 
 </style>
 <body>
+{% include 'navbar.html' %}
 {% include 'flash_message.html' %}
 
 <div class="container mt-3">
     <div class="row">
         <div class="card shadow-lg rounded-3">
-            <div class="col-md-3">
-                <div class="">
-                    <p class="attendance-list fw-bold">Attendance List Upload</p>
-
-                    <form action="{{ url_for('list_upload', list_category=list_category) }}" method="post" enctype="multipart/form-data">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="file" id="attendance_list" name="attendance_list" class="form-control mb-3" required>
-                        <button type="submit" class="btn btn-success">Submit</button>
-                    </form>
-                </div>
-
+            <div class="">
+                <p class="attendance-list fw-bold">{{ list_category }} List Upload</p>
+                <form action="{{ url_for('list_upload', list_category=list_category) }}" method="post"
+                      enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class='col-md-4'>
+                            <input type="file" id="list_file" name="list_file" class="form-control mb-3"
+                                   required>
+                        </div>
+                        {% if list_category == 'Payroll Summary' %}
+                            <div class="col-md-4">
+                                <input type="date" name="date" class="form-control">
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </form>
             </div>
-
         </div>
     </div>
-
-
 </div>
 
 
