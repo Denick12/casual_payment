@@ -35,8 +35,8 @@ def list_upload(list_category):
             return redirect(url_for('list_upload', list_category=list_category))
         elif file and allowed_file(file.filename):
             try:
+                file_data = pd.read_excel(file, sheet_name=None, engine='openpyxl', skiprows=5)
                 if list_category == 'Attendance':
-                    file_data = pd.read_excel(file, sheet_name=None, engine='openpyxl')
                     # Required columns
                     required_columns = {'Staff No.', 'Payment Rate'}
                     # Iterate over each sheet
@@ -48,13 +48,14 @@ def list_upload(list_category):
                         if not missing_columns:
                             days_data_columns = [4, 5, 6, 7, 8, 9, 10]
                             # Iterate over each row in the sheet
-                            for index, row in data.iterrows():
+                            for index, row in data.iloc[:-1].iterrows():
                                 user_id = row['Staff No.']
                                 payment_rate = row['Payment Rate']
                                 # Now inner loop for extra columns
                                 for col_index in days_data_columns:
                                     date = data.columns[col_index]  # header at that index
-                                    status = row.iloc[col_index]  # row value at that index
+                                    cell_value = row.iloc[col_index]  # row value at that index
+                                    status = 'X' if pd.isna(cell_value) else cell_value  # replace empty cells with 'X'
 
                                     # Insert into attendance table
                                     cursor.execute(
@@ -68,7 +69,6 @@ def list_upload(list_category):
                             flash(f"The following columns are missing from {sheet_name} sheet: {missing_columns_str}. "
                                   f"Please confirm and re-upload.", 'danger')
                 elif list_category == 'Payroll Summary':
-                    file_data = pd.read_excel(file, sheet_name=None, engine='openpyxl', skiprows=5)
                     date = request.form['date']
                     date_obj = datetime.strptime(date, "%Y-%m-%d")
                     # ISO calendar returns a tuple: (year, week_number, weekday)
