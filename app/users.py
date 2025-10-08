@@ -83,8 +83,8 @@ def list_upload(list_category):
                         uploaded_columns = set(data.columns)
                         missing_columns = required_columns - uploaded_columns
                         if not missing_columns:
-                            # Iterate over each row in the sheet starting from row 6...
-                            for index, row in data.iterrows():
+                            # Iterate over each row in the sheet
+                            for index, row in data.iloc[:-1].iterrows():
                                 # print(index)
                                 user_id = row['Staff No.']
                                 days_worked = row['Days Worked']
