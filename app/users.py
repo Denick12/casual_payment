@@ -75,8 +75,10 @@ def list_upload(list_category):
                     iso_year, iso_week, iso_weekday = date_obj.isocalendar()
 
                     # Required columns
-                    required_columns = {'Staff No.', 'Days Worked', 'Tips & Incentives', 'Advances', 'Pending Bills',
-                                        'Overpayment'}
+                    required_columns = {'Staff No.', 'Tips & Incentives', 'Gross', 'Shif', 'Nssf', 'Housing Levy',
+                                        'Advances', 'Overpayment', 'Pending Bills', 'Total Dedution',
+                                        'Housing Levy Refund', 'Pending Bills',
+                                        }
                     # Iterate over each sheet
                     for sheet_name, data in file_data.items():
                         # Check for missing columns
@@ -87,15 +89,24 @@ def list_upload(list_category):
                             for index, row in data.iloc[:-1].iterrows():
                                 # print(index)
                                 user_id = row['Staff No.']
-                                days_worked = row['Days Worked']
                                 tips = row['Tips & Incentives']
+                                gross = row['Gross']
+                                shif = row['Shif']
+                                nssf = row['Nssf']
+                                housing_levy = row['Housing Levy']
                                 advances = row['Advances']
-                                pending_bills = row['Pending Bills']
                                 overpayment = row['Overpayment']
+                                pending_bills = row['Pending Bills']
+                                total_deduction = row['Total Dedution']
+                                housing_levy_refund = row['Housing Levy Refund']
+
                                 # Insert into attendance table
-                                cursor.execute("insert into payroll_summary(staff_no, days_worked, tips, advances, "
-                                               "pending_bills, overpayment, week, year) values(%s,%s,%s,%s,%s,%s,%s,%s)",
-                                               (user_id, days_worked, tips, advances, pending_bills, overpayment,
+                                cursor.execute("insert into payroll_summary (staff_no, tips, gross, shif, nssf, "
+                                               "housing_levy, advances, overpayment, pending_bills, total_deduction, "
+                                               "housing_levy_refund, week, year)"
+                                               "values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                                               (user_id, tips, gross, shif, nssf, housing_levy, advances,
+                                                overpayment, pending_bills, total_deduction, housing_levy_refund,
                                                 iso_week, iso_year))
                             conn.commit()
                             flash("list uploaded successfully", 'success')
