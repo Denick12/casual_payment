@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pymysql import IntegrityError
 
@@ -8,7 +8,7 @@ from flask_wtf.csrf import CSRFProtect
 import pandas as pd
 from flask import request, flash, redirect, url_for, render_template
 import openpyxl
-
+import calendar
 csrf = CSRFProtect(app)
 
 
@@ -129,3 +129,8 @@ def list_upload(list_category):
                 conn.close()
                 return redirect(url_for('list_upload', list_category=list_category))
     return render_template('users.html', list_category=list_category)
+
+
+@app.route('/payroll_summary', methods=['GET', 'POST'])
+def payroll_summary():
+    return render_template('payroll_summary.html')
