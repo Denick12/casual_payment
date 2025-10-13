@@ -31,43 +31,6 @@
         </div>
     </div>
 </section>
-<section>
-    <div class="container">
-        {% if data.crosses_month %}
-            <table class="table table-hover">
-                <tr>
-                    <td>Date</td>
-                    <td>Reference</td>
-                    <td>Base Amount</td>
-                </tr>
-                <tr>
-                    <td>{{ data.first_range[0][0] }}</td>
-                    <td>{{ data.sum_of_first_range[0] }}</td>
-                    <td>{{ data.sum_of_first_range[1] }}</td>
-                </tr>
-                <tr>
-                    <td>{{ data.second_range[0][0] }}</td>
-                    <td>{{ data.sum_of_second_range[0] }}</td>
-                    <td>{{ data.sum_of_second_range[1] }}</td>
-                </tr>
-                {% for row in data.first_range %}
-                    <tr>
-                        <td>{{ row[0] }}</td>
-                        <td>{{ row[1] }}</td>
-                        <td>{{ row[2] }}</td>
-                    </tr>
-                {% endfor %}
-                {% for row in data.second_range %}
-                    <tr>
-                        <td>{{ row[0] }}</td>
-                        <td>{{ row[1] }}</td>
-                        <td>{{ row[2] }}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        {% endif %}
-    </div>
-</section>
 </body>
 </html>
 
