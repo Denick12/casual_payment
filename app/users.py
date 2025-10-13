@@ -133,4 +133,48 @@ def list_upload(list_category):
 
 @app.route('/payroll_summary', methods=['GET', 'POST'])
 def payroll_summary():
-    return render_template('payroll_summary.html')
+    conn, cursor = db_connection()
+    # hard coded, to be made dynamic later
+    year = 2025
+    week = 26
+    # ISO week: Sunday as first day
+    first_day_of_the_week = datetime.fromisocalendar(year, week, 7)
+    last_day_of_the_week = first_day_of_the_week + timedelta(days=6)
+
+    # check whether the week crosses 2 different months
+    crosses_month = first_day_of_the_week.month != last_day_of_the_week.month
+    if crosses_month:
+        # Get the month of that first day
+        month = first_day_of_the_week.month
+
+        # Get the last day of that month (date)
+        last_day_of_month = calendar.monthrange(year, month)[1]  # returns (weekday_of_first_day, num_days_in_month)
+
+        # Construct the date of the last day
+        last_day_date = datetime(year, month, last_day_of_month)
+        first_day_of_following_month = datetime(year, month + 1, 1)
+        # compute the first range...
+        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) "
+                       "from payroll_summary "
+                       "join attendance_records on staff_no = user_id "
+                       "where status = %s and date between %s and %s group by user_id ",
+                       (last_day_date, 'P', first_day_of_the_week, last_day_date))
+        first_range = cursor.fetchall()
+        # required date format = 'date month_name 2025'
+        sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[1] for row in first_range)]
+        # compute the second range...
+        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from payroll_summary "
+                       "join attendance_records on staff_no = user_id "
+                       "where status = %s and date between %s and %s group by user_id ",
+                       (last_day_of_the_week, 'P', first_day_of_following_month, last_day_of_the_week))
+        second_range = cursor.fetchall()
+        # required date format = 'date month_name 2025'
+        sum_of_second_range = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[1] for row in second_range)]
+        data = {
+            'crosses_month': crosses_month,
+            'first_range': first_range,
+            'sum_of_first_range': sum_of_first_range,
+            'second_range': second_range,
+            'sum_of_second_range': sum_of_second_range
+        }
+    return render_template('payroll_summary.html', data=data)
