@@ -136,7 +136,7 @@ def payroll_summary():
     conn, cursor = db_connection()
     # hard coded, to be made dynamic later
     year = 2025
-    week = 26
+    week = 31
     # ISO week: Sunday as first day
     first_day_of_the_week = datetime.fromisocalendar(year, week, 7)
     last_day_of_the_week = first_day_of_the_week + timedelta(days=6)
@@ -155,21 +155,19 @@ def payroll_summary():
         first_day_of_following_month = datetime(year, month + 1, 1)
         # compute the first range...
         cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) "
-                       "from payroll_summary "
-                       "join attendance_records on staff_no = user_id "
+                       "from attendance_records "
                        "where status = %s and date between %s and %s group by user_id ",
                        (last_day_date, 'P', first_day_of_the_week, last_day_date))
         first_range = cursor.fetchall()
         # required date format = 'date month_name 2025'
-        sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[1] for row in first_range)]
+        sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[2] for row in first_range)]
         # compute the second range...
-        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from payroll_summary "
-                       "join attendance_records on staff_no = user_id "
+        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from attendance_records "
                        "where status = %s and date between %s and %s group by user_id ",
                        (last_day_of_the_week, 'P', first_day_of_following_month, last_day_of_the_week))
         second_range = cursor.fetchall()
         # required date format = 'date month_name 2025'
-        sum_of_second_range = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[1] for row in second_range)]
+        sum_of_second_range = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[2] for row in second_range)]
         data = {
             'crosses_month': crosses_month,
             'first_range': first_range,
@@ -178,12 +176,12 @@ def payroll_summary():
             'sum_of_second_range': sum_of_second_range
         }
     else:
-        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from payroll_summary "
-                       "join attendance_records on staff_no = user_id "
+        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from  "
+                       "attendance_records "
                        "where status = %s and date between %s and %s group by user_id ",
                        (last_day_of_the_week, 'P', first_day_of_the_week, last_day_of_the_week))
         all_range = cursor.fetchall()
-        sum_of_all_ranges = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[1] for row in all_range)]
+        sum_of_all_ranges = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[2] for row in all_range)]
         data = {
             'crosses_month': crosses_month,
             'all_range': all_range,
