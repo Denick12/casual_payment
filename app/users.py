@@ -177,4 +177,16 @@ def payroll_summary():
             'second_range': second_range,
             'sum_of_second_range': sum_of_second_range
         }
+    else:
+        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from payroll_summary "
+                       "join attendance_records on staff_no = user_id "
+                       "where status = %s and date between %s and %s group by user_id ",
+                       (last_day_of_the_week, 'P', first_day_of_the_week, last_day_of_the_week))
+        all_range = cursor.fetchall()
+        sum_of_all_ranges = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[1] for row in all_range)]
+        data = {
+            'crosses_month': crosses_month,
+            'all_range': all_range,
+            'sum_of_all_ranges': sum_of_all_ranges,
+        }
     return render_template('payroll_summary.html', data=data)
