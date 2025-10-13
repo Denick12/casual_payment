@@ -9,28 +9,127 @@
 
 <section class="container mt-4">
     <div class="row g-3 align-items-end">
+        <!-- Year Selector -->
         <div class="col-md-3">
-            <label for="start_date" class="form-label">Start Date</label>
-            <input type="date" id="start_date" name="start_date" class="form-control">
-        </div>
-            <div class="col-md-3">
-            <label for="end_date" class="form-label">End Date</label>
-            <input type="date" id="end_date" name="end_date" class="form-control">
+            <label for="year" class="form-label">Select Year</label>
+            <select id="year" name="year" class="form-control">
+                <option value="">-- Select Year --</option>
+                {% for y in range(2023, 2026) %}
+                    <option value="{{ y }}">{{ y }}</option>
+                {% endfor %}
+            </select>
         </div>
 
+        <!-- Week Selector (Shows Week Number + Dates) -->
+        <div class="col-md-4">
+            <label for="week" class="form-label">Select Week</label>
+            <select id="week" name="week" class="form-control">
+                <option value="">-- Select Week --</option>
+            </select>
+        </div>
+
+        <!-- View Summary Button -->
         <div class="col-md-2">
             <button class="btn btn-dark w-100" id="filterBtn">
                 <i class="bi bi-funnel"></i> View Summary
             </button>
         </div>
 
+        <!-- Download Button -->
         <div class="col-md-2">
             <button class="btn btn-success w-100" id="downloadBtn">
                 <i class="bi bi-download"></i> Download
             </button>
         </div>
     </div>
+
+    <!-- Section for summary results -->
+    <div id="summaryResults" class="mt-4"></div>
 </section>
+
+<script>
+    // Helper: Generate Sunday–Saturday weeks for a given year
+    function generateWeeks(year) {
+        const weeks = [];
+        let startDate = new Date(year, 0, 1);
+
+        // Move to first Sunday of the year
+        while (startDate.getDay() !== 0) {
+            startDate.setDate(startDate.getDate() + 1);
+        }
+
+        let weekNum = 1;
+        while (startDate.getFullYear() === year ||
+               (startDate.getFullYear() === year + 1 && startDate.getMonth() === 0)) {
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+
+            weeks.push({
+                week: weekNum,
+                start: new Date(startDate),
+                end: new Date(endDate)
+            });
+
+            startDate.setDate(startDate.getDate() + 7);
+            weekNum++;
+
+            // Stop once we've passed into the next year (beyond week 52/53)
+            if (startDate.getFullYear() > year && startDate.getMonth() > 0) break;
+        }
+
+        return weeks;
+    }
+
+    // Helper: Format date like "30 Jun 2025"
+    function formatDate(date) {
+        return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    // Populate weeks when year is selected
+    document.getElementById("year").addEventListener("change", function() {
+        const year = this.value;
+        const weekSelect = document.getElementById("week");
+        weekSelect.innerHTML = '<option value="">-- Select Week --</option>';
+        if (!year) return;
+
+        const weeks = generateWeeks(parseInt(year));
+        weeks.forEach(w => {
+            const option = document.createElement("option");
+            option.value = w.week;
+            option.textContent = `Week ${w.week} (${formatDate(w.start)} - ${formatDate(w.end)})`;
+            weekSelect.appendChild(option);
+        });
+    });
+
+    // Filter Button Action
+    document.getElementById("filterBtn").addEventListener("click", function() {
+        const year = document.getElementById("year").value;
+        const week = document.getElementById("week").value;
+        if (!year || !week) {
+            alert("Please select both year and week.");
+            return;
+        }
+
+        fetch(`/payroll_summary_data?year=${year}&week=${week}`)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('summaryResults').innerHTML = data;
+            })
+            .catch(err => console.error(err));
+    });
+
+    // Download Button Action
+    document.getElementById("downloadBtn").addEventListener("click", function() {
+        const year = document.getElementById("year").value;
+        const week = document.getElementById("week").value;
+        if (!year || !week) {
+            alert("Please select both year and week before downloading.");
+            return;
+        }
+        window.location.href = `/download_payroll_summary?year=${year}&week=${week}`;
+    });
+</script>
+
 </body>
 </html>
 
