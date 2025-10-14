@@ -187,4 +187,24 @@ def payroll_summary():
             'all_range': all_range,
             'sum_of_all_ranges': sum_of_all_ranges,
         }
+    cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), tips, shif, nssf, housing_levy, advances, "
+                   "pending_bills from payroll_summary "
+                   "where week = %s and year = %s ", (last_day_of_the_week, week, year))
+    deductions = cursor.fetchall()
+    sum_of_tips = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[1] for row in deductions)]
+    sum_of_shif = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[2] for row in deductions)]
+    sum_of_nssf = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[3] for row in deductions)]
+    sum_of_housing_levy = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[4] for row in deductions)]
+    sum_of_advances = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[5] for row in deductions)]
+    sum_of_pending_bills = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[6] for row in deductions)]
+    deductions_data = {
+        'deductions': deductions,
+        'sum_of_tips': sum_of_tips,
+        'sum_of_shif': sum_of_shif,
+        'sum_of_nssf': sum_of_nssf,
+        'sum_of_housing_levy': sum_of_housing_levy,
+        'sum_of_advances': sum_of_advances,
+        'sum_of_pending_bills': sum_of_pending_bills
+    }
+    data.update(deductions_data)
     return render_template('payroll_summary.html', data=data)
