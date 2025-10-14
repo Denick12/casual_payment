@@ -189,7 +189,7 @@ def payroll_summary():
             'sum_of_all_ranges': sum_of_all_ranges,
         }
     cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), tips, shif, nssf, housing_levy, advances, "
-                   "pending_bills from payroll_summary "
+                   "pending_bills, staff_no from payroll_summary "
                    "where week = %s and year = %s ", (last_day_of_the_week, week, year))
     deductions = cursor.fetchall()
     sum_of_tips = sum(row[1] for row in deductions)
