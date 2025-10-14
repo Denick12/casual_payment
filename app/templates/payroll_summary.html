@@ -62,51 +62,51 @@
                 </tr>
                 <tr>
                     <td>{{ data.second_range[0][0] }}</td>
-                    <td>{{ data.sum_of_second_range[0] }}</td>
-                    <td>{{ data.sum_of_second_range[1] }}</td>
+                    <td>{{ data.last_day_formated }}</td>
+                    <td>{{ data.sum_of_second_range }}</td>
                 </tr>
             {% else %}
                 <tr>
                     <td>{{ data.all_range[0][0] }}</td>
-                    <td>{{ data.sum_of_all_ranges[0] }}</td>
-                    <td>{{ data.sum_of_all_ranges[1] }}</td>
+                    <td>{{ data.last_day_formated }}</td>
+                    <td>{{ data.sum_of_all_ranges }}</td>
                 </tr>
             {% endif %}
             <!-- Tips totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.sum_of_tips[0] }}</td>
-                <td>{{ data.sum_of_tips[1] }}</td>
+                <td>{{ data.last_day_formated }}</td>
+                <td>{{ data.sum_of_tips }}</td>
             </tr>
             <!-- SHIF totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.sum_of_shif[0] }}</td>
-                <td>{{ data.sum_of_shif[1] }}</td>
+                <td>{{ data.last_day_formated }}</td>
+                <td>{{ data.sum_of_shif }}</td>
             </tr>
             <!-- NSSF totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.sum_of_nssf[0] }}</td>
-                <td>{{ data.sum_of_nssf[1] }}</td>
+                <td>{{ data.last_day_formated }}</td>
+                <td>{{ data.sum_of_nssf }}</td>
             </tr>
             <!-- Housing Levy totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.sum_of_housing_levy[0] }}</td>
-                <td>{{ data.sum_of_housing_levy[1] }}</td>
+                <td>{{ data.last_day_formated }}</td>
+                <td>{{ data.sum_of_housing_levy }}</td>
             </tr>
             <!-- Advances totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.sum_of_advances[0] }}</td>
-                <td>{{ data.sum_of_advances[1] }}</td>
+                <td>{{ data.last_day_formated }}</td>
+                <td>{{ data.sum_of_advances }}</td>
             </tr>
             <!-- Pending Bills totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.sum_of_pending_bills[0] }}</td>
-                <td>{{ data.sum_of_pending_bills[1] }}</td>
+                <td>{{ data.last_day_formated }}</td>
+                <td>{{ data.sum_of_pending_bills }}</td>
             </tr>
 
             {% if data.crosses_month %}

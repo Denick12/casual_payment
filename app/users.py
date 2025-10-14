@@ -143,6 +143,7 @@ def payroll_summary():
 
     # check whether the week crosses 2 different months
     crosses_month = first_day_of_the_week.month != last_day_of_the_week.month
+    last_day_formated = last_day_of_the_week.strftime('%e %B %Y')
     if crosses_month:
         # Get the month of that first day
         month = first_day_of_the_week.month
@@ -167,7 +168,7 @@ def payroll_summary():
                        (last_day_of_the_week, 'P', first_day_of_following_month, last_day_of_the_week))
         second_range = cursor.fetchall()
         # required date format = 'date month_name 2025'
-        sum_of_second_range = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[2] for row in second_range)]
+        sum_of_second_range = sum(row[2] for row in second_range)
         data = {
             'crosses_month': crosses_month,
             'first_range': first_range,
@@ -181,7 +182,7 @@ def payroll_summary():
                        "where status = %s and date between %s and %s group by user_id ",
                        (last_day_of_the_week, 'P', first_day_of_the_week, last_day_of_the_week))
         all_range = cursor.fetchall()
-        sum_of_all_ranges = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[2] for row in all_range)]
+        sum_of_all_ranges = sum(row[2] for row in all_range)
         data = {
             'crosses_month': crosses_month,
             'all_range': all_range,
@@ -191,12 +192,12 @@ def payroll_summary():
                    "pending_bills from payroll_summary "
                    "where week = %s and year = %s ", (last_day_of_the_week, week, year))
     deductions = cursor.fetchall()
-    sum_of_tips = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[1] for row in deductions)]
-    sum_of_shif = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[2] for row in deductions)]
-    sum_of_nssf = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[3] for row in deductions)]
-    sum_of_housing_levy = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[4] for row in deductions)]
-    sum_of_advances = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[5] for row in deductions)]
-    sum_of_pending_bills = [last_day_of_the_week.strftime('%e %B %Y'), sum(row[6] for row in deductions)]
+    sum_of_tips = sum(row[1] for row in deductions)
+    sum_of_shif = sum(row[2] for row in deductions)
+    sum_of_nssf = sum(row[3] for row in deductions)
+    sum_of_housing_levy = sum(row[4] for row in deductions)
+    sum_of_advances = sum(row[5] for row in deductions)
+    sum_of_pending_bills = sum(row[6] for row in deductions)
     deductions_data = {
         'deductions': deductions,
         'sum_of_tips': sum_of_tips,
@@ -204,7 +205,8 @@ def payroll_summary():
         'sum_of_nssf': sum_of_nssf,
         'sum_of_housing_levy': sum_of_housing_levy,
         'sum_of_advances': sum_of_advances,
-        'sum_of_pending_bills': sum_of_pending_bills
+        'sum_of_pending_bills': sum_of_pending_bills,
+        'last_day_formated': last_day_formated,
     }
     data.update(deductions_data)
     return render_template('payroll_summary.html', data=data)
