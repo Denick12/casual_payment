@@ -48,13 +48,13 @@
 </section>
 <section>
     <div class="container">
-        {% if data.crosses_month %}
-            <table class="table table-hover">
-                <tr>
-                    <td>Date</td>
-                    <td>Reference</td>
-                    <td>Base Amount</td>
-                </tr>
+        <table class="table table-hover">
+            <tr>
+                <td>Date</td>
+                <td>Reference</td>
+                <td>Base Amount</td>
+            </tr>
+            {% if data.crosses_month %}
                 <tr>
                     <td>{{ data.first_range[0][0] }}</td>
                     <td>{{ data.sum_of_first_range[0] }}</td>
@@ -65,6 +65,15 @@
                     <td>{{ data.sum_of_second_range[0] }}</td>
                     <td>{{ data.sum_of_second_range[1] }}</td>
                 </tr>
+            {% else %}
+                <tr>
+                    <td>{{ data.all_range[0][0] }}</td>
+                    <td>{{ data.sum_of_all_ranges[0] }}</td>
+                    <td>{{ data.sum_of_all_ranges[1] }}</td>
+                </tr>
+            {% endif %}
+
+            {% if data.crosses_month %}
                 {% for row in data.first_range %}
                     <tr>
                         <td>{{ row[0] }}</td>
@@ -79,19 +88,7 @@
                         <td>{{ row[2] }}</td>
                     </tr>
                 {% endfor %}
-            </table>
-        {% else %}
-            <table class="table table-hover">
-                <tr>
-                    <td>Date</td>
-                    <td>Reference</td>
-                    <td>Base Amount</td>
-                </tr>
-                <tr>
-                    <td>{{ data.all_range[0][0] }}</td>
-                    <td>{{ data.sum_of_all_ranges[0] }}</td>
-                    <td>{{ data.sum_of_all_ranges[1] }}</td>
-                </tr>
+            {% else %}
                 {% for row in data.all_range %}
                     <tr>
                         <td>{{ row[0] }}</td>
@@ -99,9 +96,8 @@
                         <td>{{ row[2] }}</td>
                     </tr>
                 {% endfor %}
-            </table>
-        {% endif %}
-
+            {% endif %}
+        </table>
     </div>
 </section>
 
@@ -118,7 +114,7 @@
 
         let weekNum = 1;
         while (startDate.getFullYear() === year ||
-               (startDate.getFullYear() === year + 1 && startDate.getMonth() === 0)) {
+        (startDate.getFullYear() === year + 1 && startDate.getMonth() === 0)) {
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + 6);
 
@@ -140,11 +136,11 @@
 
     // Helper: Format date like "30 Jun 2025"
     function formatDate(date) {
-        return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        return date.toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'});
     }
 
     // Populate weeks when year is selected
-    document.getElementById("year").addEventListener("change", function() {
+    document.getElementById("year").addEventListener("change", function () {
         const year = this.value;
         const weekSelect = document.getElementById("week");
         weekSelect.innerHTML = '<option value="">-- Select Week --</option>';
@@ -160,7 +156,7 @@
     });
 
     // Filter Button Action
-    document.getElementById("filterBtn").addEventListener("click", function() {
+    document.getElementById("filterBtn").addEventListener("click", function () {
         const year = document.getElementById("year").value;
         const week = document.getElementById("week").value;
         if (!year || !week) {
@@ -177,7 +173,7 @@
     });
 
     // Download Button Action
-    document.getElementById("downloadBtn").addEventListener("click", function() {
+    document.getElementById("downloadBtn").addEventListener("click", function () {
         const year = document.getElementById("year").value;
         const week = document.getElementById("week").value;
         if (!year || !week) {
