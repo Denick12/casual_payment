@@ -134,79 +134,86 @@ def list_upload(list_category):
 @app.route('/payroll_summary', methods=['GET', 'POST'])
 def payroll_summary():
     conn, cursor = db_connection()
-    # hard coded, to be made dynamic later
-    year = 2025
-    week = 31
-    # ISO week: Sunday as first day
-    first_day_of_the_week = datetime.fromisocalendar(year, week, 7)
-    last_day_of_the_week = first_day_of_the_week + timedelta(days=6)
+    if request.method == 'POST':
+        # Get year and week from the query parameters (sent from the form)
+        year = int(request.form.get('year'))
+        week = int(request.form.get('week'))
 
-    # check whether the week crosses 2 different months
-    crosses_month = first_day_of_the_week.month != last_day_of_the_week.month
-    last_day_formated = last_day_of_the_week.strftime('%e %B %Y')
-    if crosses_month:
-        # Get the month of that first day
-        month = first_day_of_the_week.month
+        # If no inputs provided, show page with form (GET request)
+        if not year or not week:
+            return render_template('payroll_summary.html')
 
-        # Get the last day of that month (date)
-        last_day_of_month = calendar.monthrange(year, month)[1]  # returns (weekday_of_first_day, num_days_in_month)
+        # ISO week: Sunday as first day
+        first_day_of_the_week = datetime.fromisocalendar(year, week, 7)
+        last_day_of_the_week = first_day_of_the_week + timedelta(days=6)
 
-        # Construct the date of the last day
-        last_day_date = datetime(year, month, last_day_of_month)
-        first_day_of_following_month = datetime(year, month + 1, 1)
-        # compute the first range...
-        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) "
-                       "from attendance_records "
-                       "where status = %s and date between %s and %s group by user_id ",
-                       (last_day_date, 'P', first_day_of_the_week, last_day_date))
-        first_range = cursor.fetchall()
-        # required date format = 'date month_name 2025'
-        sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[2] for row in first_range)]
-        # compute the second range...
-        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from attendance_records "
-                       "where status = %s and date between %s and %s group by user_id ",
-                       (last_day_of_the_week, 'P', first_day_of_following_month, last_day_of_the_week))
-        second_range = cursor.fetchall()
-        # required date format = 'date month_name 2025'
-        sum_of_second_range = sum(row[2] for row in second_range)
-        data = {
-            'crosses_month': crosses_month,
-            'first_range': first_range,
-            'sum_of_first_range': sum_of_first_range,
-            'second_range': second_range,
-            'sum_of_second_range': sum_of_second_range
+        # check whether the week crosses 2 different months
+        crosses_month = first_day_of_the_week.month != last_day_of_the_week.month
+        last_day_formated = last_day_of_the_week.strftime('%e %B %Y')
+        if crosses_month:
+            # Get the month of that first day
+            month = first_day_of_the_week.month
+
+            # Get the last day of that month (date)
+            last_day_of_month = calendar.monthrange(year, month)[1]  # returns (weekday_of_first_day, num_days_in_month)
+
+            # Construct the date of the last day
+            last_day_date = datetime(year, month, last_day_of_month)
+            first_day_of_following_month = datetime(year, month + 1, 1)
+            # compute the first range...
+            cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) "
+                           "from attendance_records "
+                           "where status = %s and date between %s and %s group by user_id ",
+                           (last_day_date, 'P', first_day_of_the_week, last_day_date))
+            first_range = cursor.fetchall()
+            # required date format = 'date month_name 2025'
+            sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[2] for row in first_range)]
+            # compute the second range...
+            cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from attendance_records "
+                           "where status = %s and date between %s and %s group by user_id ",
+                           (last_day_of_the_week, 'P', first_day_of_following_month, last_day_of_the_week))
+            second_range = cursor.fetchall()
+            # required date format = 'date month_name 2025'
+            sum_of_second_range = sum(row[2] for row in second_range)
+            data = {
+                'crosses_month': crosses_month,
+                'first_range': first_range,
+                'sum_of_first_range': sum_of_first_range,
+                'second_range': second_range,
+                'sum_of_second_range': sum_of_second_range
+            }
+        else:
+            cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from  "
+                           "attendance_records "
+                           "where status = %s and date between %s and %s group by user_id ",
+                           (last_day_of_the_week, 'P', first_day_of_the_week, last_day_of_the_week))
+            all_range = cursor.fetchall()
+            sum_of_all_ranges = sum(row[2] for row in all_range)
+            data = {
+                'crosses_month': crosses_month,
+                'all_range': all_range,
+                'sum_of_all_ranges': sum_of_all_ranges,
+            }
+        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), tips, shif, nssf, housing_levy, advances, "
+                       "pending_bills, staff_no from payroll_summary "
+                       "where week = %s and year = %s ", (last_day_of_the_week, week, year))
+        deductions = cursor.fetchall()
+        sum_of_tips = sum(row[1] for row in deductions)
+        sum_of_shif = sum(row[2] for row in deductions)
+        sum_of_nssf = sum(row[3] for row in deductions)
+        sum_of_housing_levy = sum(row[4] for row in deductions)
+        sum_of_advances = sum(row[5] for row in deductions)
+        sum_of_pending_bills = sum(row[6] for row in deductions)
+        deductions_data = {
+            'deductions': deductions,
+            'sum_of_tips': sum_of_tips,
+            'sum_of_shif': sum_of_shif,
+            'sum_of_nssf': sum_of_nssf,
+            'sum_of_housing_levy': sum_of_housing_levy,
+            'sum_of_advances': sum_of_advances,
+            'sum_of_pending_bills': sum_of_pending_bills,
+            'last_day_formated': last_day_formated,
         }
-    else:
-        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from  "
-                       "attendance_records "
-                       "where status = %s and date between %s and %s group by user_id ",
-                       (last_day_of_the_week, 'P', first_day_of_the_week, last_day_of_the_week))
-        all_range = cursor.fetchall()
-        sum_of_all_ranges = sum(row[2] for row in all_range)
-        data = {
-            'crosses_month': crosses_month,
-            'all_range': all_range,
-            'sum_of_all_ranges': sum_of_all_ranges,
-        }
-    cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), tips, shif, nssf, housing_levy, advances, "
-                   "pending_bills, staff_no from payroll_summary "
-                   "where week = %s and year = %s ", (last_day_of_the_week, week, year))
-    deductions = cursor.fetchall()
-    sum_of_tips = sum(row[1] for row in deductions)
-    sum_of_shif = sum(row[2] for row in deductions)
-    sum_of_nssf = sum(row[3] for row in deductions)
-    sum_of_housing_levy = sum(row[4] for row in deductions)
-    sum_of_advances = sum(row[5] for row in deductions)
-    sum_of_pending_bills = sum(row[6] for row in deductions)
-    deductions_data = {
-        'deductions': deductions,
-        'sum_of_tips': sum_of_tips,
-        'sum_of_shif': sum_of_shif,
-        'sum_of_nssf': sum_of_nssf,
-        'sum_of_housing_levy': sum_of_housing_levy,
-        'sum_of_advances': sum_of_advances,
-        'sum_of_pending_bills': sum_of_pending_bills,
-        'last_day_formated': last_day_formated,
-    }
-    data.update(deductions_data)
-    return render_template('payroll_summary.html', data=data)
+        data.update(deductions_data)
+        return render_template('payroll_summary.html', data=data)
+    return render_template('payroll_summary.html')

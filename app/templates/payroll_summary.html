@@ -8,44 +8,52 @@
 {% include 'navbar.html' %}
 
 <section class="container mt-4">
-    <div class="row g-3 align-items-end">
-        <!-- Year Selector -->
-        <div class="col-md-3">
-            <label for="year" class="form-label">Select Year</label>
-            <select id="year" name="year" class="form-control">
-                <option value="">-- Select Year --</option>
-                {% for y in range(2023, 2026) %}
-                    <option value="{{ y }}">{{ y }}</option>
-                {% endfor %}
-            </select>
-        </div>
+    <form action="{{ url_for('payroll_summary') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <!-- Week Selector (Shows Week Number + Dates) -->
-        <div class="col-md-4">
-            <label for="week" class="form-label">Select Week</label>
-            <select id="week" name="week" class="form-control">
-                <option value="">-- Select Week --</option>
-            </select>
-        </div>
+        <div class="row g-3 align-items-end">
 
-        <!-- View Summary Button -->
-        <div class="col-md-2">
-            <button class="btn btn-dark w-100" id="filterBtn">
-                <i class="bi bi-funnel"></i> View Summary
-            </button>
-        </div>
+            <!-- Year Selector -->
+            <div class="col-md-3">
+                <label for="year" class="form-label">Select Year</label>
+                <select id="year" name="year" class="form-control">
+                    <option value="">-- Select Year --</option>
+                    {% for y in range(2023, 2026) %}
+                        <option value="{{ y }}">{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <!-- Download Button -->
-        <div class="col-md-2">
-            <button class="btn btn-success w-100" id="downloadBtn">
-                <i class="bi bi-download"></i> Download
-            </button>
+            <!-- Week Selector (Shows Week Number + Dates) -->
+            <div class="col-md-4">
+                <label for="week" class="form-label">Select Week</label>
+                <select id="week" name="week" class="form-control">
+                    <option value="">-- Select Week --</option>
+                </select>
+            </div>
+
+            <!-- View Summary Button -->
+            <div class="col-md-2">
+                <button class="btn btn-dark w-100" id="">
+                    <i class="bi bi-funnel"></i> View Summary
+                </button>
+            </div>
+
+            <!-- Download Button -->
+            <div class="col-md-2">
+                <button class="btn btn-success w-100" id="">
+                    <i class="bi bi-download"></i> Download
+                </button>
+            </div>
+
+
         </div>
-    </div>
+    </form>
 
     <!-- Section for summary results -->
     <div id="summaryResults" class="mt-4"></div>
 </section>
+{% if data %}
 <section>
     <div class="container">
         <table class="table table-hover">
@@ -151,6 +159,7 @@
         </table>
     </div>
 </section>
+{% endif %}
 
 <script>
     // Helper: Generate Sunday–Saturday weeks for a given year
