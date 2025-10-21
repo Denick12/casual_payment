@@ -9,6 +9,7 @@ import pandas as pd
 from flask import request, flash, redirect, url_for, render_template
 import openpyxl
 import calendar
+
 csrf = CSRFProtect(app)
 
 
@@ -161,20 +162,30 @@ def payroll_summary():
             last_day_date = datetime(year, month, last_day_of_month)
             first_day_of_following_month = datetime(year, month + 1, 1)
             # compute the first range...
-            cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) "
+            cursor.execute("select "
+                           f"IF(month(%s) > 9 and month(%s) < 13, "
+                           f"concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
+                           f", "
+                           f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
+                           "date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) "
                            "from attendance_records "
                            "where status = %s and date between %s and %s group by user_id ",
-                           (last_day_date, 'P', first_day_of_the_week, last_day_date))
+                           (*[last_day_date] * 7, 'P', first_day_of_the_week, last_day_date))
             first_range = cursor.fetchall()
             # required date format = 'date month_name 2025'
-            sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[2] for row in first_range)]
+            sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[3] for row in first_range)]
             # compute the second range...
-            cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from attendance_records "
+            cursor.execute("select "
+                           "IF(month(%s) > 9 and month(%s) < 13, "
+                           "concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
+                           ", "
+                           "concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
+                           "date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from attendance_records "
                            "where status = %s and date between %s and %s group by user_id ",
-                           (last_day_of_the_week, 'P', first_day_of_following_month, last_day_of_the_week))
+                           (*[last_day_of_the_week] * 7, 'P', first_day_of_following_month, last_day_of_the_week))
             second_range = cursor.fetchall()
             # required date format = 'date month_name 2025'
-            sum_of_second_range = sum(row[2] for row in second_range)
+            sum_of_second_range = sum(row[3] for row in second_range)
             data = {
                 'crosses_month': crosses_month,
                 'first_range': first_range,
@@ -183,27 +194,36 @@ def payroll_summary():
                 'sum_of_second_range': sum_of_second_range
             }
         else:
-            cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from  "
-                           "attendance_records "
+            cursor.execute("select "
+                           "IF(month(%s) > 9 and month(%s) < 13, "
+                           "concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
+                           ", "
+                           "concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
+                           "date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from attendance_records "
                            "where status = %s and date between %s and %s group by user_id ",
-                           (last_day_of_the_week, 'P', first_day_of_the_week, last_day_of_the_week))
+                           (*[last_day_of_the_week] * 7, 'P', first_day_of_the_week, last_day_of_the_week))
             all_range = cursor.fetchall()
-            sum_of_all_ranges = sum(row[2] for row in all_range)
+            sum_of_all_ranges = sum(row[3] for row in all_range)
             data = {
                 'crosses_month': crosses_month,
                 'all_range': all_range,
                 'sum_of_all_ranges': sum_of_all_ranges,
             }
-        cursor.execute("select date_format(%s, '%%m/%%e/%%Y'), tips, shif, nssf, housing_levy, advances, "
+        cursor.execute("select "
+                       f"IF(month(%s) > 9 and month(%s) < 13, "
+                       f"concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
+                       f", "
+                       f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
+                       " date_format(%s, '%%m/%%e/%%Y'), tips, shif, nssf, housing_levy, advances, "
                        "pending_bills, staff_no from payroll_summary "
-                       "where week = %s and year = %s ", (last_day_of_the_week, week, year))
+                       "where week = %s and year = %s ", (*[last_day_of_the_week] *7, week, year))
         deductions = cursor.fetchall()
-        sum_of_tips = sum(row[1] for row in deductions)
-        sum_of_shif = sum(row[2] for row in deductions)
-        sum_of_nssf = sum(row[3] for row in deductions)
-        sum_of_housing_levy = sum(row[4] for row in deductions)
-        sum_of_advances = sum(row[5] for row in deductions)
-        sum_of_pending_bills = sum(row[6] for row in deductions)
+        sum_of_tips = sum(row[2] for row in deductions)
+        sum_of_shif = sum(row[3] for row in deductions)
+        sum_of_nssf = sum(row[4] for row in deductions)
+        sum_of_housing_levy = sum(row[5] for row in deductions)
+        sum_of_advances = sum(row[6] for row in deductions)
+        sum_of_pending_bills = sum(row[7] for row in deductions)
         deductions_data = {
             'deductions': deductions,
             'sum_of_tips': sum_of_tips,

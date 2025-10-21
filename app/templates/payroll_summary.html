@@ -45,8 +45,6 @@
                     <i class="bi bi-download"></i> Download
                 </button>
             </div>
-
-
         </div>
     </form>
 
@@ -58,6 +56,7 @@
     <div class="container">
         <table class="table table-hover">
             <tr>
+                <td>Period</td>
                 <td>Date</td>
                 <td>Reference</td>
                 <td>Base Amount</td>
@@ -66,56 +65,65 @@
             {% if data.crosses_month %}
                 <tr>
                     <td>{{ data.first_range[0][0] }}</td>
+                    <td>{{ data.first_range[0][1] }}</td>
                     <td>{{ data.sum_of_first_range[0] }}</td>
-                    <td>{{ data.sum_of_first_range[1] }}</td>
+                    <td>{{ '{:,}'.format(data.sum_of_first_range[1]) }}</td>
                 </tr>
                 <tr>
                     <td>{{ data.second_range[0][0] }}</td>
+                    <td>{{ data.second_range[0][1] }}</td>
                     <td>{{ data.last_day_formated }}</td>
-                    <td>{{ data.sum_of_second_range }}</td>
+                    <td>{{ '{:,}'.format(data.sum_of_second_range) }}</td>
                 </tr>
             {% else %}
                 <tr>
                     <td>{{ data.all_range[0][0] }}</td>
+                    <td>{{ data.all_range[0][1] }}</td>
                     <td>{{ data.last_day_formated }}</td>
-                    <td>{{ data.sum_of_all_ranges }}</td>
+                    <td>{{ '{:,}'.format(data.sum_of_all_ranges) }}</td>
                 </tr>
             {% endif %}
             <!-- Tips totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
+                <td>{{ data.deductions[0][1] }}</td>
                 <td>{{ data.last_day_formated }}</td>
-                <td>{{ data.sum_of_tips }}</td>
+                <td>{{ '{:,}'.format(data.sum_of_tips) }}</td>
             </tr>
             <!-- SHIF totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
+                <td>{{ data.deductions[0][1] }}</td>
                 <td>{{ data.last_day_formated }}</td>
-                <td>{{ data.sum_of_shif }}</td>
+                <td>{{ '{:,}'.format(data.sum_of_shif) }}</td>
             </tr>
             <!-- NSSF totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
+                <td>{{ data.deductions[0][1] }}</td>
                 <td>{{ data.last_day_formated }}</td>
-                <td>{{ data.sum_of_nssf }}</td>
+                <td>{{ '{:,}'.format(data.sum_of_nssf) }}</td>
             </tr>
             <!-- Housing Levy totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
+                <td>{{ data.deductions[0][1] }}</td>
                 <td>{{ data.last_day_formated }}</td>
-                <td>{{ data.sum_of_housing_levy }}</td>
+                <td>{{ '{:,}'.format(data.sum_of_housing_levy) }}</td>
             </tr>
             <!-- Advances totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
+                <td>{{ data.deductions[0][1] }}</td>
                 <td>{{ data.last_day_formated }}</td>
-                <td>{{ data.sum_of_advances }}</td>
+                <td>{{ '{:,}'.format(data.sum_of_advances) }}</td>
             </tr>
             <!-- Pending Bills totals -->
             <tr>
                 <td>{{ data.deductions[0][0] }}</td>
+                <td>{{ data.deductions[0][1] }}</td>
                 <td>{{ data.last_day_formated }}</td>
-                <td>{{ data.sum_of_pending_bills }}</td>
+                <td>{{ '{:,}'.format(data.sum_of_pending_bills) }}</td>
             </tr>
             <!-- End Summation Section -->
 
@@ -126,6 +134,7 @@
                         <td>{{ row[0] }}</td>
                         <td>{{ row[1] }}</td>
                         <td>{{ row[2] }}</td>
+                        <td>{{ '{:,}'.format(row[3]) }}</td>
                     </tr>
                 {% endfor %}
                 {% for row in data.second_range %}
@@ -133,6 +142,7 @@
                         <td>{{ row[0] }}</td>
                         <td>{{ row[1] }}</td>
                         <td>{{ row[2] }}</td>
+                        <td>{{ '{:,}'.format(row[3]) }}</td>
                     </tr>
                 {% endfor %}
             {% else %}
@@ -141,21 +151,22 @@
                         <td>{{ row[0] }}</td>
                         <td>{{ row[1] }}</td>
                         <td>{{ row[2] }}</td>
+                        <td>{{ '{:,}'.format(row[3]) }}</td>
                     </tr>
                 {% endfor %}
             {% endif %}
             <!-- End Detailed data Section -->
             <!-- for loop to display the detailed section of deductions -->
-            {% for col_index in range(1,7) %}
+            {% for col_index in range(2,8) %}
                 {% for data in data.deductions %}
                     <tr>
                         <td>{{ data[0] }}</td>
-                        <td>{{ data[7] }}</td>
-                        <td>{{ data[col_index] }}</td>
+                        <td>{{ data[1] }}</td>
+                        <td>{{ data[8] }}</td>
+                        <td>{{ '{:,}'.format(data[col_index]) }}</td>
                     </tr>
                 {% endfor %}
             {% endfor %}
-
         </table>
     </div>
 </section>
