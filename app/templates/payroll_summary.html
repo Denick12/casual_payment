@@ -6,6 +6,7 @@
 </head>
 <body>
 {% include 'navbar.html' %}
+{% include 'flash_message.html' %}
 
 <section class="container mt-4">
     <form action="{{ url_for('payroll_summary') }}" method="post">
