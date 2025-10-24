@@ -92,6 +92,7 @@ def list_upload(list_category):
                                 user_id = row['Staff No.']
                                 tips = row['Tips & Incentives']
                                 gross = row['Gross']
+                                paye = row['Paye']
                                 shif = row['Shif']
                                 nssf = row['Nssf']
                                 housing_levy = row['Housing Levy']
@@ -102,11 +103,11 @@ def list_upload(list_category):
                                 housing_levy_refund = row['Housing Levy Refund']
 
                                 # Insert into attendance table
-                                cursor.execute("insert into payroll_summary (staff_no, tips, gross, shif, nssf, "
+                                cursor.execute("insert into payroll_summary (staff_no, tips, gross, paye, shif, nssf, "
                                                "housing_levy, advances, overpayment, pending_bills, total_deduction, "
                                                "housing_levy_refund, week, year)"
-                                               "values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                                               (user_id, tips, gross, shif, nssf, housing_levy, advances,
+                                               "values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                                               (user_id, tips, gross, paye, shif, nssf, housing_levy, advances,
                                                 overpayment, pending_bills, total_deduction, housing_levy_refund,
                                                 iso_week, iso_year))
                             conn.commit()
@@ -162,78 +163,120 @@ def payroll_summary():
             last_day_date = datetime(year, month, last_day_of_month)
             first_day_of_following_month = datetime(year, month + 1, 1)
             # compute the first range...
-            cursor.execute("select "
+            cursor.execute("select '1;3;6', "
                            f"IF(month(%s) > 9 and month(%s) < 13, "
                            f"concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
                            f", "
                            f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
-                           "date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) "
+                           "date_format(%s, '%%m/%%e/%%Y'), accounts.account_code, attendance_records.user_id, name, "
+                           "sum(payment_rate), journal_marker, property_code, department, sub_department "
                            "from attendance_records "
-                           "where status = %s and date between %s and %s group by user_id ",
-                           (*[last_day_date] * 7, 'P', first_day_of_the_week, last_day_date))
+                           "join casuals on attendance_records.user_id = casuals.user_id "
+                           "join accounts_mapping on casuals.unit = accounts_mapping.unit_id "
+                           "join accounts on accounts_mapping.account_id = accounts.account_id "
+                           "join journals on journals.journal_id = accounts_mapping.journal_id "
+                           "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
+                           "where status = %s and date between %s and %s and account_name = %s group by user_id",
+                           (*[last_day_date] * 7, 'P', first_day_of_the_week, last_day_date, 'Basic Salary'))
             first_range = cursor.fetchall()
             # required date format = 'date month_name 2025'
-            sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[3] for row in first_range)]
+            sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[6] for row in first_range)]
             # compute the second range...
-            cursor.execute("select "
-                           "IF(month(%s) > 9 and month(%s) < 13, "
-                           "concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
-                           ", "
-                           "concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
-                           "date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from attendance_records "
-                           "where status = %s and date between %s and %s group by user_id ",
-                           (*[last_day_of_the_week] * 7, 'P', first_day_of_following_month, last_day_of_the_week))
+            cursor.execute("select '1;3;6', "
+                           f"IF(month(%s) > 9 and month(%s) < 13, "
+                           f"concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
+                           f", "
+                           f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
+                           "date_format(%s, '%%m/%%e/%%Y'), accounts.account_code, attendance_records.user_id, name, "
+                           "sum(payment_rate), journal_marker, property_code, department, sub_department "
+                           "from attendance_records "
+                           "join casuals on attendance_records.user_id = casuals.user_id "
+                           "join casual_payments.accounts_mapping on casuals.unit = accounts_mapping.unit_id "
+                           "join accounts on accounts_mapping.account_id = accounts.account_id "
+                           "join journals on journals.journal_id = accounts_mapping.journal_id "
+                           "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
+                           "where status = %s and date between %s and %s and account_name = %s group by user_id ",
+                           (*[last_day_of_the_week] * 7, 'P', first_day_of_following_month, last_day_of_the_week,
+                            'Basic Salary'))
             second_range = cursor.fetchall()
             # required date format = 'date month_name 2025'
-            sum_of_second_range = sum(row[3] for row in second_range)
+            sum_of_second_range = sum(row[6] for row in second_range)
             data = {
                 'crosses_month': crosses_month,
                 'first_range': first_range,
                 'sum_of_first_range': sum_of_first_range,
                 'second_range': second_range,
-                'sum_of_second_range': sum_of_second_range
+                'sum_of_second_range': sum_of_second_range,
+                'last_day_formated': last_day_formated
             }
         else:
-            cursor.execute("select "
-                           "IF(month(%s) > 9 and month(%s) < 13, "
-                           "concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
-                           ", "
-                           "concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
-                           "date_format(%s, '%%m/%%e/%%Y'), user_id, sum(payment_rate) from attendance_records "
-                           "where status = %s and date between %s and %s group by user_id ",
-                           (*[last_day_of_the_week] * 7, 'P', first_day_of_the_week, last_day_of_the_week))
+            cursor.execute("select '1;3;6', "
+                           f"IF(month(%s) > 9 and month(%s) < 13, "
+                           f"concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
+                           f", "
+                           f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
+                           "date_format(%s, '%%m/%%e/%%Y'), accounts.account_code, attendance_records.user_id, name, "
+                           "sum(payment_rate), journal_marker, property_code, department, sub_department "
+                           "from attendance_records "
+                           "join casuals on attendance_records.user_id = casuals.user_id "
+                           "join casual_payments.accounts_mapping on casuals.unit = accounts_mapping.unit_id "
+                           "join accounts on accounts_mapping.account_id = accounts.account_id "
+                           "join journals on journals.journal_id = accounts_mapping.journal_id "
+                           "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
+                           "where status = %s and date between %s and %s and account_name = %s group by user_id ",
+                           (*[last_day_of_the_week] * 7, 'P', first_day_of_the_week, last_day_of_the_week,
+                            'Basic Salary'))
             all_range = cursor.fetchall()
-            sum_of_all_ranges = sum(row[3] for row in all_range)
+            sum_of_all_ranges = sum(row[6] for row in all_range)
             data = {
                 'crosses_month': crosses_month,
                 'all_range': all_range,
                 'sum_of_all_ranges': sum_of_all_ranges,
+                'last_day_formated': last_day_formated
             }
-        cursor.execute("select "
-                       f"IF(month(%s) > 9 and month(%s) < 13, "
-                       f"concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
-                       f", "
-                       f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
-                       " date_format(%s, '%%m/%%e/%%Y'), tips, shif, nssf, housing_levy, advances, "
-                       "pending_bills, staff_no from payroll_summary "
-                       "where week = %s and year = %s ", (*[last_day_of_the_week] *7, week, year))
-        deductions = cursor.fetchall()
-        sum_of_tips = sum(row[2] for row in deductions)
-        sum_of_shif = sum(row[3] for row in deductions)
-        sum_of_nssf = sum(row[4] for row in deductions)
-        sum_of_housing_levy = sum(row[5] for row in deductions)
-        sum_of_advances = sum(row[6] for row in deductions)
-        sum_of_pending_bills = sum(row[7] for row in deductions)
-        deductions_data = {
-            'deductions': deductions,
-            'sum_of_tips': sum_of_tips,
-            'sum_of_shif': sum_of_shif,
-            'sum_of_nssf': sum_of_nssf,
-            'sum_of_housing_levy': sum_of_housing_levy,
-            'sum_of_advances': sum_of_advances,
-            'sum_of_pending_bills': sum_of_pending_bills,
-            'last_day_formated': last_day_formated,
-        }
-        data.update(deductions_data)
-        return render_template('payroll_summary.html', data=data)
+        # create empty dictionary to hold the respective data
+        deductions_data = {}
+        aggregated_data = {}
+        # select available account names from db, except basic salary account because its calculation is done on
+        # the queries above
+        cursor.execute('select distinct account_name from accounts where account_name != %s','Basic Salary')
+        accounts = cursor.fetchall()
+        # hard code a list of the columns needed from the payroll summary table
+        column_headers = ['tips', 'shif', 'nssf', 'housing_levy', 'advances', 'paye', 'pending_bills']
+        # arrange the headers in alphabetical order in order to match the accounts order
+        column_headers.sort()
+        # using zip function, match each account to a column header in order to extract data
+        for (account,), column_header in zip(accounts, column_headers):
+            cursor.execute("select '1;3;6', "
+                           f"IF(month(%s) > 9 and month(%s) < 13, "
+                           f"concat(year(%s) + 1, '/', lpad(month(%s) %% 9, 3, '0'))"
+                           f", "
+                           f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
+                           f" date_format(%s, '%%m/%%e/%%Y'), accounts.account_code, staff_no, name, {column_header}, "
+                           f"journal_marker, property_code, department, sub_department "
+                           "from payroll_summary "
+                           "join casuals on staff_no = user_id "
+                           "join casual_payments.accounts_mapping on casuals.unit = accounts_mapping.unit_id "
+                           "join accounts on accounts_mapping.account_id = accounts.account_id "
+                           "join journals on journals.journal_id = accounts_mapping.journal_id "
+                           "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
+                           "where week = %s and year = %s and account_name = %s",
+                           (*[last_day_of_the_week] * 7, week, year, account))
+            extracted_data = cursor.fetchall()
+            # create a dictionary to hold the deductions data with the account name as the key and the data
+            # under that account as the value
+            deductions = {
+                f'{account}': extracted_data
+            }
+            # create another dictionary to hold the aggregated values of each account name
+            deductions_sums = {
+                f'{account}': [extracted_data[0][0], extracted_data[0][1], extracted_data[0][2],
+                               sum(row[6] for row in extracted_data)]
+            }
+            # update the empty dictionaries from before with the data that we just created above
+            deductions_data.update(deductions)
+            aggregated_data.update(deductions_sums)
+        # pass all the data to the payroll summary template for displaying
+        return render_template('payroll_summary.html', data=data, deductions_data=deductions_data,
+                               aggregated_data=aggregated_data)
     return render_template('payroll_summary.html')

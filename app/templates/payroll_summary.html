@@ -52,125 +52,159 @@
     <div id="summaryResults" class="mt-4"></div>
 </section>
 {% if data %}
-<section>
-    <div class="container">
-        <table class="table table-hover">
-            <tr>
-                <th>Period</th>
-                <th>Date</th>
-                <th>Reference</th>
-                <th>Base Amount</th>
-
-            </tr>
-            <!-- Summation Section -->
-            {% if data.crosses_month %}
+    <section>
+        <div class="container">
+            <table class="table table-hover">
+                <!-- Header section -->
                 <tr>
-                    <td>{{ data.first_range[0][0] }}</td>
-                    <td>{{ data.first_range[0][1] }}</td>
-                    <td>{{ data.sum_of_first_range[0] }}</td>
-                    <td>{{ '{:,}'.format(data.sum_of_first_range[1]) }}</td>
+                    <th>1</th>
+                    <th>Period</th>
+                    <th>Date</th>
+                    <th>Account Code</th>
+                    <th>Reference</th>
+                    <th>Description</th>
+                    <th>Base Amount</th>
+                    <th>Dr/Cr</th>
+                    <th>Property</th>
+                    <th>Outlet</th>
+                    <th>Sub Outlet</th>
+                    <th>Journal Type</th>
                 </tr>
-                <tr>
-                    <td>{{ data.second_range[0][0] }}</td>
-                    <td>{{ data.second_range[0][1] }}</td>
-                    <td>{{ data.last_day_formated }}</td>
-                    <td>{{ '{:,}'.format(data.sum_of_second_range) }}</td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td>{{ data.all_range[0][0] }}</td>
-                    <td>{{ data.all_range[0][1] }}</td>
-                    <td>{{ data.last_day_formated }}</td>
-                    <td>{{ '{:,}'.format(data.sum_of_all_ranges) }}</td>
-                </tr>
-            {% endif %}
-            <!-- Tips totals -->
-            <tr>
-                <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.deductions[0][1] }}</td>
-                <td>{{ data.last_day_formated }}</td>
-                <td>{{ '{:,}'.format(data.sum_of_tips) }}</td>
-            </tr>
-            <!-- SHIF totals -->
-            <tr>
-                <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.deductions[0][1] }}</td>
-                <td>{{ data.last_day_formated }}</td>
-                <td>{{ '{:,}'.format(data.sum_of_shif) }}</td>
-            </tr>
-            <!-- NSSF totals -->
-            <tr>
-                <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.deductions[0][1] }}</td>
-                <td>{{ data.last_day_formated }}</td>
-                <td>{{ '{:,}'.format(data.sum_of_nssf) }}</td>
-            </tr>
-            <!-- Housing Levy totals -->
-            <tr>
-                <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.deductions[0][1] }}</td>
-                <td>{{ data.last_day_formated }}</td>
-                <td>{{ '{:,}'.format(data.sum_of_housing_levy) }}</td>
-            </tr>
-            <!-- Advances totals -->
-            <tr>
-                <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.deductions[0][1] }}</td>
-                <td>{{ data.last_day_formated }}</td>
-                <td>{{ '{:,}'.format(data.sum_of_advances) }}</td>
-            </tr>
-            <!-- Pending Bills totals -->
-            <tr>
-                <td>{{ data.deductions[0][0] }}</td>
-                <td>{{ data.deductions[0][1] }}</td>
-                <td>{{ data.last_day_formated }}</td>
-                <td>{{ '{:,}'.format(data.sum_of_pending_bills) }}</td>
-            </tr>
-            <!-- End Summation Section -->
-
-            <!-- Detailed data Section -->
-            {% if data.crosses_month %}
-                {% for row in data.first_range %}
+                <!-- Summation Section for basic salary -->
+                {% if data.crosses_month %}
+                    <!-- This displays if requested data crosses 2 months -->
                     <tr>
-                        <td>{{ row[0] }}</td>
-                        <td>{{ row[1] }}</td>
-                        <td>{{ row[2] }}</td>
-                        <td>{{ '{:,}'.format(row[3]) }}</td>
+                        <td>{{ data.first_range[0][0] }}</td>
+                        <td>{{ data.first_range[0][1] }}</td>
+                        <td>{{ data.first_range[0][2] }}</td>
+                        <td>110383</td>
+                        <td>{{ data.sum_of_first_range[0] }}</td>
+                        <td>M-pesa Payments</td>
+                        <td>{{ '{:,}'.format(data.sum_of_first_range[1]) }}</td>
+                        <td>C</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>MPESA</td>
+                    </tr>
+                    <tr>
+                        <td>{{ data.second_range[0][0] }}</td>
+                        <td>{{ data.second_range[0][1] }}</td>
+                        <td>{{ data.second_range[0][2] }}</td>
+                        <td>110383</td>
+                        <td>{{ data.last_day_formated }}</td>
+                        <td>M-pesa Payments</td>
+                        <td>{{ '{:,}'.format(data.sum_of_second_range) }}</td>
+                        <td>C</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>MPESA</td>
+                    </tr>
+                {% else %}
+                    <!-- This displays if requested data is all within the same month -->
+                    <tr>
+                        <td>{{ data.all_range[0][0] }}</td>
+                        <td>{{ data.all_range[0][1] }}</td>
+                        <td>{{ data.all_range[0][2] }}</td>
+                        <td>110383</td>
+                        <td>{{ data.last_day_formated }}</td>
+                        <td>M-pesa Payments</td>
+                        <td>{{ '{:,}'.format(data.sum_of_all_ranges) }}</td>
+                        <td>C</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>MPESA</td>
+                    </tr>
+                {% endif %}
+                <!-- End of summation Section for basic salary -->
+                <!-- for loop to display the aggregated section of deductions (advances, housing levy, NSSF,
+                PAYE, Pending bills, SHIF, tips) -->
+                {% for key, values in aggregated_data.items() %}
+                    <tr>
+                        <td>{{ values[0] }}</td>
+                        <td>{{ values[1] }}</td>
+                        <td>{{ values[2] }}</td>
+                        <td>110383</td>
+                        <td>{{ data.last_day_formated }}</td>
+                        <td>{{ key }}</td>
+                        <td>{{ '{:,}'.format(values[3]) }}</td>
+                        <td>D</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>MPESA</td>
                     </tr>
                 {% endfor %}
-                {% for row in data.second_range %}
-                    <tr>
-                        <td>{{ row[0] }}</td>
-                        <td>{{ row[1] }}</td>
-                        <td>{{ row[2] }}</td>
-                        <td>{{ '{:,}'.format(row[3]) }}</td>
-                    </tr>
+                <!-- Detailed data Section for basic salary -->
+                {% if data.crosses_month %}
+                    {% for row in data.first_range %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                            <td>{{ row[3] }}</td>
+                            <td>{{ row[4] }}</td>
+                            <td>{{ row[5] }}</td>
+                            <td>{{ '{:,}'.format(row[6]) }}</td>
+                            <td>{{ row[7] }}</td>
+                            <td>{{ row[8] }}</td>
+                            <td>{{ row[9] }}</td>
+                            <td>{{ row[10] }}</td>
+                            <td>MPESA</td>
+                        </tr>
+                    {% endfor %}
+                    {% for row in data.second_range %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                            <td>{{ row[3] }}</td>
+                            <td>{{ row[4] }}</td>
+                            <td>{{ row[5] }}</td>
+                            <td>{{ '{:,}'.format(row[6]) }}</td>
+                            <td>{{ row[7] }}</td>
+                            <td>{{ row[8] }}</td>
+                            <td>{{ row[9] }}</td>
+                            <td>{{ row[10] }}</td>
+                            <td>MPESA</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    {% for row in data.all_range %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                            <td>{{ row[3] }}</td>
+                            <td>{{ row[4] }}</td>
+                            <td>{{ row[5] }}</td>
+                            <td>{{ '{:,}'.format(row[6]) }}</td>
+                            <td>{{ row[7] }}</td>
+                            <td>{{ row[8] }}</td>
+                            <td>{{ row[9] }}</td>
+                            <td>{{ row[10] }}</td>
+                            <td>MPESA</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                <!-- End of Detailed data Section for basic salary -->
+                <!-- for loop to display the detailed section of deductions -->
+                {% for key, values in deductions_data.items() %}
+                    <th>{{ key }}</th>
+                    {% for row in values %}
+                        <tr>
+                            {% for item in row %}
+                                <td>{{ item }}</td>
+                            {% endfor %}
+                            <td>MPESA</td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
-            {% else %}
-                {% for row in data.all_range %}
-                    <tr>
-                        <td>{{ row[0] }}</td>
-                        <td>{{ row[1] }}</td>
-                        <td>{{ row[2] }}</td>
-                        <td>{{ '{:,}'.format(row[3]) }}</td>
-                    </tr>
-                {% endfor %}
-            {% endif %}
-            <!-- End Detailed data Section -->
-            <!-- for loop to display the detailed section of deductions -->
-            {% for col_index in range(2,8) %}
-                {% for data in data.deductions %}
-                    <tr>
-                        <td>{{ data[0] }}</td>
-                        <td>{{ data[1] }}</td>
-                        <td>{{ data[8] }}</td>
-                        <td>{{ '{:,}'.format(data[col_index]) }}</td>
-                    </tr>
-                {% endfor %}
-            {% endfor %}
-        </table>
-    </div>
-</section>
+            </table>
+        </div>
+    </section>
 {% endif %}
 
 <script>
