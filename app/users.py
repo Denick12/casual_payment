@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
+from io import BytesIO
 
+from openpyxl.workbook import Workbook
 from pymysql import IntegrityError
 
 from app import app
 import pymysql
 from flask_wtf.csrf import CSRFProtect
 import pandas as pd
-from flask import request, flash, redirect, url_for, render_template
+from flask import request, flash, redirect, url_for, render_template, Response
 import openpyxl
 import calendar
 
@@ -78,7 +80,7 @@ def list_upload(list_category):
                     # Required columns
                     required_columns = {'Staff No.', 'Tips & Incentives', 'Gross', 'Shif', 'Nssf', 'Housing Levy',
                                         'Advances', 'Overpayment', 'Pending Bills', 'Total Dedution',
-                                        'Housing Levy Refund', 'Pending Bills',
+                                        'Housing Levy Refund', 'Paye',
                                         }
                     # Iterate over each sheet
                     for sheet_name, data in file_data.items():
@@ -133,18 +135,9 @@ def list_upload(list_category):
     return render_template('users.html', list_category=list_category)
 
 
-@app.route('/payroll_summary', methods=['GET', 'POST'])
-def payroll_summary():
+def get_payroll_summary(year, week):
     conn, cursor = db_connection()
-    if request.method == 'POST':
-        # Get year and week from the query parameters (sent from the form)
-        year = int(request.form.get('year'))
-        week = int(request.form.get('week'))
-
-        # If no inputs provided, show page with form (GET request)
-        if not year or not week:
-            return render_template('payroll_summary.html')
-
+    try:
         # ISO week: Sunday as first day
         first_day_of_the_week = datetime.fromisocalendar(year, week, 7)
         last_day_of_the_week = first_day_of_the_week + timedelta(days=6)
@@ -239,7 +232,7 @@ def payroll_summary():
         aggregated_data = {}
         # select available account names from db, except basic salary account because its calculation is done on
         # the queries above
-        cursor.execute('select distinct account_name from accounts where account_name != %s','Basic Salary')
+        cursor.execute('select distinct account_name from accounts where account_name != %s', 'Basic Salary')
         accounts = cursor.fetchall()
         # hard code a list of the columns needed from the payroll summary table
         column_headers = ['tips', 'shif', 'nssf', 'housing_levy', 'advances', 'paye', 'pending_bills']
@@ -276,7 +269,32 @@ def payroll_summary():
             # update the empty dictionaries from before with the data that we just created above
             deductions_data.update(deductions)
             aggregated_data.update(deductions_sums)
-        # pass all the data to the payroll summary template for displaying
-        return render_template('payroll_summary.html', data=data, deductions_data=deductions_data,
-                               aggregated_data=aggregated_data)
+
+            return data, deductions_data, aggregated_data
+    except Exception as e:
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/payroll_summary', methods=['GET', 'POST'])
+def payroll_summary():
+    if request.method == 'POST':
+        # Get year and week from the query parameters (sent from the form)
+        year = int(request.form.get('year'))
+        week = int(request.form.get('week'))
+
+        # If no inputs provided, show page with form (GET request)
+        if not year or not week:
+            return render_template('payroll_summary.html')
+        try:
+            # get data from the function
+            data, deductions_data, aggregated_data = get_payroll_summary(year, week)
+            # pass all the data to the payroll summary template for displaying
+            return render_template('payroll_summary.html', data=data, deductions_data=deductions_data,
+                                   aggregated_data=aggregated_data)
+        except Exception as e:
+            flash(f"An error occurred {e}", 'danger')
+            return redirect(url_for('payroll_summary'))
     return render_template('payroll_summary.html')
