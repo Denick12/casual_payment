@@ -15,6 +15,39 @@
     <!-- Dashboard Header -->
     <h3 class="mb-4 text-primary fw-bold text-center">Payroll Dashboard</h3>
 
+    <!-- Filters -->
+    <div class="card shadow-sm border-0 mb-4 p-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Select Period</label>
+                <select class="form-select">
+                    <option>Weekly</option>
+                    <option selected>Monthly</option>
+                    <option>Quarterly</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Unit</label>
+                <select class="form-select">
+                    <option selected>All Units</option>
+                    <option>Carnivore</option>
+                    <option>Tamarind Tree</option>
+                    <option>RBC</option>
+                    <option>KLG</option>
+                    <option>MSA</option>
+                    <option>TVL</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Date Range</label>
+                <input type="date" class="form-control">
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn btn-primary w-100">Filter</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Summary Cards -->
     <div class="row g-3">
         <div class="col-md-3">
@@ -43,7 +76,7 @@
         </div>
     </div>
 
-    <!-- Charts Section (Deductions + Quick Stats + Pie Chart) -->
+    <!-- Charts Section -->
     <div class="row mt-4">
         <!-- Deductions Breakdown -->
         <div class="col-md-5">
@@ -58,141 +91,136 @@
             <div class="card shadow-sm border-0 p-3 h-100">
                 <h6 class="fw-bold mb-3 text-center">Quick Statistics</h6>
                 <ul class="list-group list-group-flush small">
-                    <li class="list-group-item d-flex justify-content-between"><span>NSSF</span><span>80,400.12</span>
-                    </li>
+                    <li class="list-group-item d-flex justify-content-between"><span>NSSF</span><span>80,400.12</span></li>
                     <li class="list-group-item d-flex justify-content-between"><span>PAYE</span><span>0.00</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>SHIF</span><span>105,900.00</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Housing Levy</span><span>19,664.25</span></li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Advances</span><span>6,500.00</span></li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Pending Bills</span><span>0.00</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>Tips</span><span>29,052.00</span>
-                    </li>
+                    <li class="list-group-item d-flex justify-content-between"><span>SHIF</span><span>105,900.00</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>Housing Levy</span><span>19,664.25</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>Advances</span><span>6,500.00</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>Pending Bills</span><span>0.00</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>Tips</span><span>29,052.00</span></li>
                 </ul>
             </div>
         </div>
 
-        <!-- Compact Payments by Unit (Pie Chart) -->
+        <!-- Payments by Unit -->
         <div class="col-md-4">
             <div class="card shadow-sm border-0 p-3 h-100">
-                <h6 class="fw-bold mb-3 text-center">Payments by Unit (%)</h6>
-                <canvas id="unitPaymentsChart" height="180"></canvas>
+                <h6 class="fw-bold mb-3 text-center">Payments by Unit</h6>
+                <canvas id="unitPaymentsChart" height="220"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Monthly Trend -->
+    <!-- Monthly Payment Trend -->
     <div class="card shadow-sm border-0 mt-4 p-3">
         <h6 class="mb-3 fw-bold">Monthly Payment Trend</h6>
         <canvas id="trendChart" height="120"></canvas>
     </div>
 
+    <!-- Highlights -->
+    <div class="card shadow-sm border-0 mt-4 p-3">
+        <h6 class="fw-bold mb-3 text-primary">Highlights</h6>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item text-success"><b>✅ PAYE</b> remained consistent with no arrears this period.</li>
+            <li class="list-group-item text-danger"><b>⚠️ SHIF</b> contributions rose by 12% compared to last month.</li>
+            <li class="list-group-item text-warning"><b>📈 Housing Levy</b> continues a steady upward trend (8% increase).</li>
+            <li class="list-group-item text-info"><b>💡 Carnivore</b> recorded the highest payroll among all units.</li>
+            <li class="list-group-item text-secondary"><b>📊 Net payments</b> grew by 5% vs previous month.</li>
+        </ul>
+    </div>
+
 </div>
 
 <script>
-    Chart.register(ChartDataLabels);
+Chart.register(ChartDataLabels);
 
-    // ===== DEDUCTIONS CHART =====
-    const deductionsCtx = document.getElementById('deductionsChart');
-    new Chart(deductionsCtx, {
-        type: 'bar',
-        data: {
-            labels: ['NSSF', 'PAYE', 'SHIF', 'Housing Levy', 'Advances', 'Pending Bills', 'Tips'],
-            datasets: [{
-                label: 'Amount',
-                data: [80400.12, 0, 105900, 19664.25, 6500, 0, 29052],
-                backgroundColor: ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1'],
-                borderRadius: 6
-            }]
+// ===== DEDUCTIONS CHART =====
+new Chart(document.getElementById('deductionsChart'), {
+    type: 'bar',
+    data: {
+        labels: ['NSSF', 'PAYE', 'SHIF', 'Housing Levy', 'Advances', 'Pending Bills', 'Tips'],
+        datasets: [{
+            data: [80400.12, 0, 105900, 19664.25, 6500, 0, 29052],
+            backgroundColor: ['#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f','#edc948','#b07aa1'],
+            borderRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {display: false},
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: v => (v / 1000).toFixed(1) + 'K',
+                color: '#333',
+                font: {weight: 'bold'}
+            }
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {display: false},
-                title: {
-                    display: true,
-                    {#text: 'Statutory and Other Deductions',#}
-                    font: {size: 14}
+        scales: { y: {beginAtZero: true, ticks: {stepSize: 20000}} }
+    }
+});
+
+// ===== PAYMENTS BY UNIT (PIE CHART) =====
+new Chart(document.getElementById('unitPaymentsChart'), {
+    type: 'pie',
+    data: {
+        labels: ['Carnivore', 'Tamarind Tree', 'RBC', 'KLG', 'MSA', 'TVL'],
+        datasets: [{
+            data: [250000, 180000, 150000, 120000, 90000, 70000],
+            backgroundColor: ['#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f','#edc948']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {display: false},
+            datalabels: {
+                color: '#fff',
+                formatter: (value, ctx) => {
+                    const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    const kValue = (value / 1000).toFixed(1);
+                    const label = ctx.chart.data.labels[ctx.dataIndex];
+                    return `${label}\n${kValue}K`;
                 },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    formatter: v => (v / 1000).toFixed(1) + 'K',
-                    color: '#333',
-                    font: {weight: 'bold'}
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {stepSize: 20000}
-                }
+                font: {weight: 'bold', size: 11}
             }
         }
-    });
+    },
+    plugins: [ChartDataLabels]
+});
 
-    // ===== PAYMENTS BY UNIT (SMALL PIE) =====
-    const unitCtx = document.getElementById('unitPaymentsChart');
-    new Chart(unitCtx, {
-        type: 'pie',
-        data: {
-            labels: ['CNV', 'TTC', 'RTC', 'KLG', 'RBC', 'MSA', 'TVL'],
-            datasets: [{
-                data: [180000, 220000, 130000, 95000, 145000, 185000, 144166.37],
-                backgroundColor: ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {position: 'bottom', labels: {boxWidth: 12}},
-                datalabels: {
-                    color: '#fff',
-                    formatter: v => (v / 1000).toFixed(1) + 'K',
-                    font: {weight: 'bold', size: 10}
-                }
-            },
-            layout: {padding: 10}
-        }
-    });
-
-    // ===== TREND CHART (LINE) =====
-    const trendCtx = document.getElementById('trendChart');
-    new Chart(trendCtx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
-            datasets: [{
-                label: 'Total Paid',
-                data: [850000, 870000, 890000, 910000, 940000, 970000, 995000, 1010000, 1040000, 1099166],
-                fill: true,
-                backgroundColor: 'rgba(78,121,167,0.15)',
-                borderColor: '#4e79a7',
-                tension: 0.3,
-                pointRadius: 3,
-                pointBackgroundColor: '#4e79a7'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {display: false},
-                datalabels: {
-                    align: 'top',
-                    anchor: 'end',
-                    formatter: v => (v / 1000).toFixed(1) + 'K',
-                    color: '#333',
-                    font: {weight: 'bold'}
-                }
-            },
-            scales: {
-                y: {beginAtZero: false}
+// ===== MONTHLY PAYMENT TREND =====
+new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+        datasets: [{
+            label: 'Total Paid',
+            data: [850000, 870000, 890000, 910000, 940000, 970000, 995000, 1010000, 1040000, 1099166],
+            fill: true,
+            backgroundColor: 'rgba(78,121,167,0.15)',
+            borderColor: '#4e79a7',
+            tension: 0.3,
+            pointRadius: 3,
+            pointBackgroundColor: '#4e79a7'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {display: false},
+            datalabels: {
+                align: 'top',
+                anchor: 'end',
+                formatter: v => (v / 1000).toFixed(1) + 'K',
+                color: '#333',
+                font: {weight: 'bold'}
             }
-        }
-    });
+        },
+        scales: { y: {beginAtZero: false} }
+    }
+});
 </script>
 
 </body>
