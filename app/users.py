@@ -269,8 +269,7 @@ def get_payroll_summary(year, week):
             # update the empty dictionaries from before with the data that we just created above
             deductions_data.update(deductions)
             aggregated_data.update(deductions_sums)
-
-            return data, deductions_data, aggregated_data
+        return data, deductions_data, aggregated_data
     except Exception as e:
         raise e
     finally:
@@ -298,3 +297,72 @@ def payroll_summary():
             flash(f"An error occurred {e}", 'danger')
             return redirect(url_for('payroll_summary'))
     return render_template('payroll_summary.html')
+
+
+@app.route('/generate_excel')
+def generate_excel():
+    #  connect to database
+    conn, cursor = db_connection()
+    # Get year and week from the arguments
+    year = int(request.args.get('year'))
+    week = int(request.args.get('week'))
+    # get data from the function
+    data, deductions_data, aggregated_data = get_payroll_summary(year, week)
+    # Create a new Excel workbook
+    wb = Workbook()
+    # Remove the default sheet
+    if "Sheet" in wb.sheetnames:
+        default_sheet = wb["Sheet"]
+        wb.remove(default_sheet)
+
+    cursor.execute("select property_code, unit_name from `e-tamarind`.units where unit_name != %s and unit_name != %s ",
+                   ('TCS', 'Tamarind Village'))
+    units = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    for unit in units:
+        property_code = unit[0]
+        unit_name = unit[1]
+
+        ws = wb.create_sheet(title=unit_name)
+
+        # Write header to Excel
+        headers = ['1', 'Period', 'Date', 'Account Code', 'Reference', 'Description', 'Base Amount', ' Dr/Cr',
+                   'Property', 'Outlet', 'Sub Outlet', 'Journal Type']
+        for col_index, header in enumerate(headers, start=1):
+            ws.cell(row=1, column=col_index, value=header)
+            # Fetch and write data to Excel
+            # Write data for this property
+            row_index = 2
+            if data['crosses_month']:
+                for item in data['first_range']:
+                    if item[8] == property_code:  # property_code column
+                        for col_index, value in enumerate(item[:11], start=1):
+                            ws.cell(row=row_index, column=col_index, value=value)
+                        ws.cell(row=row_index, column=12, value="MPESA")
+                        row_index += 1
+                for item in data['second_range']:
+                    if item[8] == property_code:  # property_code column
+                        for col_index, value in enumerate(item[:11], start=1):
+                            ws.cell(row=row_index, column=col_index, value=value)
+                        ws.cell(row=row_index, column=12, value="MPESA")
+                        row_index += 1
+            else:
+                for item in data['all_range']:
+                    if item[8] == property_code:  # property_code column
+                        for col_index, value in enumerate(item[:11], start=1):
+                            ws.cell(row=row_index, column=col_index, value=value)
+                        ws.cell(row=row_index, column=12, value="MPESA")
+                        row_index += 1
+
+    # Save the workbook
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    # Create a downloadable response
+    return Response(
+        output.read(),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition":
+                     f"attachment; filename=Payroll Summary.xlsx"}
+    )
