@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Payroll Dashboard</title>
+    {% include 'head.html' %}
+    {% include 'navbar.html' %}
+
+</head>
+
+<body class="bg-light">
+
+<!-- Navbar placeholder -->
+<div class="container mt-2">
+
+    <!-- Dashboard Header -->
+    <h3 class="mb-4 text-primary fw-bold" style="text-align: center">Payroll Dashboard</h3>
+
+    <!-- Cards Row -->
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-3">
+                <h6>Total Base Amount</h6>
+                <h4 class="text-success">Ksh 1,099,166.37</h4>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow-sm border-0 text-center p-3">
+                <h6>Total Deductions</h6>
+                <h4 class="text-danger">Ksh 241,516.37</h4>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow-sm border-0 text-center p-3">
+                <h6>Total Credits</h6>
+                <h4 class="text-info">Ksh 857,650.00</h4>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow-sm border-0 text-center p-3">
+                <h6>Net Payment</h6>
+                <h4 class="text-primary">Ksh 616,133.63</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card shadow-sm border-0 mt-3 p-1">
+        <h6 class="mb-3 fw-bold">Deductions Breakdown</h6>
+        <canvas id="deductionsChart" height="120"></canvas>
+    </div>
+
+</div>
+
+<script>
+    const ctx = document.getElementById('deductionsChart');
+    const chartData = {
+        labels: ['NSSF', 'PAYE', 'SHIF', 'Housing Levy', 'Advances', 'Pending Bills', 'Tips'],
+        datasets: [{
+            label: 'Amount (Ksh)',
+            data: [80400.12, 0, 105900, 19664.25, 6500, 0, 29052],
+            backgroundColor: [
+                '#4e79a7',
+                '#f28e2b',
+                '#e15759',
+                '#76b7b2',
+                '#59a14f',
+                '#edc948',
+                '#b07aa1'
+            ]
+        }]
+    };
+    new Chart(ctx, {
+        type: 'bar',
+        data: chartData,
+        options: {
+            plugins: {
+                legend: {display: false},
+                title: {
+                    display: true,
+                    text: 'Statutory and Other Deductions'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {stepSize: 20000}
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

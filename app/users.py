@@ -366,3 +366,8 @@ def generate_excel():
         headers={"Content-Disposition":
                      f"attachment; filename=Payroll Summary.xlsx"}
     )
+
+
+@app.route('/')
+def home():
+    return render_template('home.html')
