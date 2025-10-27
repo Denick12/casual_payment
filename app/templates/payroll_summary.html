@@ -4,6 +4,17 @@
     {% include 'head.html' %}
     <title>Payroll Summary</title>
 </head>
+<style>
+    .download-link {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: 500
+    }
+
+    .download-link:hover {
+        text-decoration: underline;
+    }
+</style>
 <body>
 {% include 'navbar.html' %}
 {% include 'flash_message.html' %}
@@ -42,10 +53,11 @@
 
             <!-- Download Button -->
             <div class="col-md-2">
-                <a href="/generate_excel?year=2025&week=26" target="_blank">Download</a>
-{#                <button class="btn btn-success w-100" id="downloadBtn" type="button">#}
-{#                    <i class="bi bi-download"></i> Download#}
-{#                </button>#}
+                <a href="/generate_excel?year=2025&week=26" target="_blank" class="download-link btn btn-outline-success"
+                >Download</a>
+                {#                <button class="btn btn-success w-100" id="downloadBtn" type="button">#}
+                {#                    <i class="bi bi-download"></i> Download#}
+                {#                </button>#}
             </div>
         </div>
     </form>
