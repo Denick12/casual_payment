@@ -1,0 +1,34 @@
+.navbar {
+  background-color: #003366 !important;
+  /*border-bottom: 3px solid #003366;*/
+  padding: 10px 20px;
+}
+
+.navbar .btn {
+  background-color: white;
+  color: black !important;
+  border: none;
+  border-radius: 6px;
+  margin-right: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease-in-out;
+}
+
+.navbar .btn:hover,
+.navbar .btn:focus {
+  background-color: #cc0000;
+  color: white !important;
+  transform: translateY(-1px);
+}
+
+.dropdown-menu {
+  border-radius: 8px;
+  border: 1px solid #003366;
+}
+
+.dropdown-item:hover {
+  background-color: #003366;
+  color: white;
+}
+
+
