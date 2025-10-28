@@ -290,6 +290,7 @@ def payroll_summary():
         try:
             # get data from the function
             data, deductions_data, aggregated_data = get_payroll_summary(year, week)
+            print(deductions_data)
             # pass all the data to the payroll summary template for displaying
             return render_template('payroll_summary.html', data=data, deductions_data=deductions_data,
                                    aggregated_data=aggregated_data)
@@ -334,11 +335,13 @@ def generate_excel():
             # Fetch and write data to Excel
             # Write data for this property
             row_index = 2
+            # Calculation of the sum of basic salary/gross pay
+            # if data is in 2 different months
             if data['crosses_month']:
                 # Filter rows that match this property_code
                 property_rows_first = [row for row in data['first_range'] if row[8] == property_code]
                 property_rows_second = [row for row in data['second_range'] if row[8] == property_code]
-
+                # display sum of the first range
                 if property_rows_first:
                     first_range_total = sum(row[6] for row in property_rows_first)
                     ws.cell(row=row_index, column=1, value=data['first_range'][0][0])
@@ -349,12 +352,12 @@ def generate_excel():
                     ws.cell(row=row_index, column=6, value='M-pesa Payments')
                     ws.cell(row=row_index, column=7, value=first_range_total)
                     ws.cell(row=row_index, column=8, value='C')
-                    ws.cell(row=row_index, column=9, value='')
+                    ws.cell(row=row_index, column=9, value=property_code)
                     ws.cell(row=row_index, column=10, value='')
                     ws.cell(row=row_index, column=11, value='')
                     ws.cell(row=row_index, column=12, value='MPESA')
                     row_index += 1
-
+                # display sum of the second range
                 if property_rows_second:
                     second_range_total = sum(row[6] for row in property_rows_second)
                     ws.cell(row=row_index, column=1, value=data['second_range'][0][0])
@@ -365,14 +368,16 @@ def generate_excel():
                     ws.cell(row=row_index, column=6, value='M-pesa Payments')
                     ws.cell(row=row_index, column=7, value=second_range_total)
                     ws.cell(row=row_index, column=8, value='C')
-                    ws.cell(row=row_index, column=9, value='')
+                    ws.cell(row=row_index, column=9, value=property_code)
                     ws.cell(row=row_index, column=10, value='')
                     ws.cell(row=row_index, column=11, value='')
                     ws.cell(row=row_index, column=12, value='MPESA')
                     row_index += 1
+            # if data is in the same month
             else:
+                # Filter rows that match this property_code
                 property_rows_all = [row for row in data['all_range'] if row[8] == property_code]
-
+                # display the sum
                 if property_rows_all:
                     all_range_total = sum(row[6] for row in property_rows_all)
                     ws.cell(row=row_index, column=1, value=data['all_range'][0][0])
@@ -383,29 +388,61 @@ def generate_excel():
                     ws.cell(row=row_index, column=6, value='M-pesa Payments')
                     ws.cell(row=row_index, column=7, value=all_range_total)
                     ws.cell(row=row_index, column=8, value='C')
-                    ws.cell(row=row_index, column=9, value='')
+                    ws.cell(row=row_index, column=9, value=property_code)
                     ws.cell(row=row_index, column=10, value='')
                     ws.cell(row=row_index, column=11, value='')
                     ws.cell(row=row_index, column=12, value='MPESA')
                     row_index += 1
-
+            # loop through the deductions data to create sum of each deduction
+            for key, values in deductions_data.items():
+                # Filter rows belonging to this property
+                deductions_data_rows = [row for row in values if row[8] == property_code]
+                if deductions_data_rows:
+                    total = sum(row[6] for row in deductions_data_rows)
+                    ws.cell(row=row_index, column=1, value=values[0][0])
+                    ws.cell(row=row_index, column=2, value=values[0][1])
+                    ws.cell(row=row_index, column=3, value=values[0][2])
+                    ws.cell(row=row_index, column=4, value=110383)
+                    ws.cell(row=row_index, column=5, value=data['last_day_formated'])
+                    ws.cell(row=row_index, column=6, value=key)
+                    ws.cell(row=row_index, column=7, value=total)
+                    ws.cell(row=row_index, column=8, value='D')
+                    ws.cell(row=row_index, column=9, value=property_code)
+                    ws.cell(row=row_index, column=10, value='')
+                    ws.cell(row=row_index, column=11, value='')
+                    ws.cell(row=row_index, column=12, value='MPESA')
+                    row_index += 1
+            # if data is between 2 months
             if data['crosses_month']:
+                # display the detailed section of the basic salary first range
                 for item in data['first_range']:
                     if item[8] == property_code:  # property_code column
                         for col_index, value in enumerate(item[:11], start=1):
                             ws.cell(row=row_index, column=col_index, value=value)
                         ws.cell(row=row_index, column=12, value="MPESA")
                         row_index += 1
+                # display the detailed section of the basic salary second range
                 for item in data['second_range']:
                     if item[8] == property_code:  # property_code column
                         for col_index, value in enumerate(item[:11], start=1):
                             ws.cell(row=row_index, column=col_index, value=value)
                         ws.cell(row=row_index, column=12, value="MPESA")
                         row_index += 1
+            # if it is all in one month
             else:
+                # display the detailed section of the basic salary all range
                 for item in data['all_range']:
                     if item[8] == property_code:  # property_code column
                         for col_index, value in enumerate(item[:11], start=1):
+                            ws.cell(row=row_index, column=col_index, value=value)
+                        ws.cell(row=row_index, column=12, value="MPESA")
+                        row_index += 1
+            # for loop to generate the detailed data of the deductions section (advances, housing levy, NSSF,
+            #                 PAYE, Pending bills, SHIF, tips)
+            for key, values in deductions_data.items():
+                for row in values:
+                    if row[8] == property_code:
+                        for col_index, value in enumerate(row[:11], start=1):
                             ws.cell(row=row_index, column=col_index, value=value)
                         ws.cell(row=row_index, column=12, value="MPESA")
                         row_index += 1
