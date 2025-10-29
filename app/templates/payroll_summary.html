@@ -14,7 +14,7 @@
     .download-link:hover {
         text-decoration: underline;
     }
-  </style>
+</style>
 <body>
 {% include 'navbar.html' %}
 {% include 'flash_message.html' %}
@@ -53,11 +53,7 @@
 
             <!-- Download Button -->
             <div class="col-md-2">
-                <a href="/generate_excel?year=2025&week=26" target="_blank" class="download-link btn btn-outline-success"
-                >Download</a>
-                {#                <button class="btn btn-success w-100" id="downloadBtn" type="button">#}
-                {#                    <i class="bi bi-download"></i> Download#}
-                {#                </button>#}
+                <a href="" type="button" class="btn btn-success w-100" id="downloadBtn">Download</a>
             </div>
         </div>
     </form>
@@ -274,24 +270,6 @@
             weekSelect.appendChild(option);
         });
     });
-
-    // Filter Button Action
-    document.getElementById("filterBtn").addEventListener("click", function () {
-        const year = document.getElementById("year").value;
-        const week = document.getElementById("week").value;
-        if (!year || !week) {
-            alert("Please select both year and week.");
-            return;
-        }
-
-        fetch(`/payroll_summary_data?year=${year}&week=${week}`)
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('summaryResults').innerHTML = data;
-            })
-            .catch(err => console.error(err));
-    });
-
     // Download Button Action
     document.getElementById("downloadBtn").addEventListener("click", function () {
         const year = document.getElementById("year").value;
@@ -300,7 +278,7 @@
             alert("Please select both year and week before downloading.");
             return;
         }
-        window.location.href = `/download_payroll_summary?year=${year}&week=${week}`;
+        window.open(`{{ url_for('generate_excel') }}?year=${year}&week=${week}`, '_blank');
     });
 </script>
 
