@@ -327,8 +327,9 @@ def generate_excel():
     # Get year and week from the arguments
     year = int(request.args.get('year'))
     week = int(request.args.get('week'))
+    unit = request.args.get('unit', "")
     # get data from the function
-    data, deductions_data, aggregated_data = get_payroll_summary(year, week)
+    data, deductions_data, aggregated_data = get_payroll_summary(year, week, unit)
     # Create a new Excel workbook
     wb = Workbook()
     # Remove the default sheet
@@ -336,8 +337,11 @@ def generate_excel():
         default_sheet = wb["Sheet"]
         wb.remove(default_sheet)
 
-    cursor.execute("select property_code, unit_name from `e-tamarind`.units where unit_name != %s ",
-                   'Tamarind Village')
+    if unit:
+        cursor.execute("select property_code, unit_name from `e-tamarind`.units where unit_id = %s", unit)
+    else:
+        cursor.execute("select property_code, unit_name from `e-tamarind`.units where unit_name != %s ",
+                       'Tamarind Village')
     units = cursor.fetchall()
     cursor.close()
     conn.close()

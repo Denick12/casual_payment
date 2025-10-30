@@ -288,11 +288,12 @@
     document.getElementById("downloadBtn").addEventListener("click", function () {
         const year = document.getElementById("year").value;
         const week = document.getElementById("week").value;
+        const unit = document.getElementById("unit").value;
         if (!year || !week) {
             alert("Please select both year and week before downloading.");
             return;
         }
-        window.open(`{{ url_for('generate_excel') }}?year=${year}&week=${week}`, '_blank');
+        window.open(`{{ url_for('generate_excel') }}?year=${year}&week=${week}&unit=${unit}`, '_blank');
     });
 </script>
 
