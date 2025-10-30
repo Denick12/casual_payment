@@ -135,7 +135,7 @@ def list_upload(list_category):
     return render_template('users.html', list_category=list_category)
 
 
-def get_payroll_summary(year, week):
+def get_payroll_summary(year, week, unit):
     conn, cursor = db_connection()
     try:
         # ISO week: Sunday as first day
@@ -145,6 +145,15 @@ def get_payroll_summary(year, week):
         # check whether the week crosses 2 different months
         crosses_month = first_day_of_the_week.month != last_day_of_the_week.month
         last_day_formated = last_day_of_the_week.strftime('%e %B %Y')
+        # check if anything is passed in the units parameter
+        if unit:
+            # if it is passed, the data requested will be filtered to that specific unit
+            operator = "="
+            value = unit
+        else:
+            # if not, it will pull data of all the units
+            operator = "like"
+            value = "%"
         if crosses_month:
             # Get the month of that first day
             month = first_day_of_the_week.month
@@ -169,8 +178,10 @@ def get_payroll_summary(year, week):
                            "join accounts on accounts_mapping.account_id = accounts.account_id "
                            "join journals on journals.journal_id = accounts_mapping.journal_id "
                            "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
-                           "where status = %s and date between %s and %s and account_name = %s group by user_id",
-                           (*[last_day_date] * 7, 'P', first_day_of_the_week, last_day_date, 'Basic Salary'))
+                           "where status = %s and date between %s and %s and account_name = %s "
+                           f"and units.unit_id {operator} %s "
+                           "group by user_id",
+                           (*[last_day_date] * 7, 'P', first_day_of_the_week, last_day_date, 'Basic Salary', value))
             first_range = cursor.fetchall()
             # required date format = 'date month_name 2025'
             sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[6] for row in first_range)]
@@ -188,9 +199,11 @@ def get_payroll_summary(year, week):
                            "join accounts on accounts_mapping.account_id = accounts.account_id "
                            "join journals on journals.journal_id = accounts_mapping.journal_id "
                            "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
-                           "where status = %s and date between %s and %s and account_name = %s group by user_id ",
+                           "where status = %s and date between %s and %s and account_name = %s "
+                           f"and units.unit_id {operator} %s "
+                           "group by user_id ",
                            (*[last_day_of_the_week] * 7, 'P', first_day_of_following_month, last_day_of_the_week,
-                            'Basic Salary'))
+                            'Basic Salary', value))
             second_range = cursor.fetchall()
             # required date format = 'date month_name 2025'
             sum_of_second_range = sum(row[6] for row in second_range)
@@ -216,9 +229,11 @@ def get_payroll_summary(year, week):
                            "join accounts on accounts_mapping.account_id = accounts.account_id "
                            "join journals on journals.journal_id = accounts_mapping.journal_id "
                            "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
-                           "where status = %s and date between %s and %s and account_name = %s group by user_id ",
+                           "where status = %s and date between %s and %s and account_name = %s "
+                           f"and units.unit_id {operator} %s "
+                           "group by user_id ",
                            (*[last_day_of_the_week] * 7, 'P', first_day_of_the_week, last_day_of_the_week,
-                            'Basic Salary'))
+                            'Basic Salary', value))
             all_range = cursor.fetchall()
             sum_of_all_ranges = sum(row[6] for row in all_range)
             data = {
@@ -253,8 +268,8 @@ def get_payroll_summary(year, week):
                            "join accounts on accounts_mapping.account_id = accounts.account_id "
                            "join journals on journals.journal_id = accounts_mapping.journal_id "
                            "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
-                           "where week = %s and year = %s and account_name = %s",
-                           (*[last_day_of_the_week] * 7, week, year, account))
+                           f"where week = %s and year = %s and account_name = %s and units.unit_id {operator} %s",
+                           (*[last_day_of_the_week] * 7, week, year, account, value))
             extracted_data = cursor.fetchall()
             # create a dictionary to hold the deductions data with the account name as the key and the data
             # under that account as the value
@@ -279,25 +294,30 @@ def get_payroll_summary(year, week):
 
 @app.route('/payroll_summary', methods=['GET', 'POST'])
 def payroll_summary():
+    conn, cursor = db_connection()
+    cursor.execute('select unit_id, unit_name from `e-tamarind`.units')
+    unit_data = cursor.fetchall()
+    cursor.close()
+    conn.close()
     if request.method == 'POST':
         # Get year and week from the query parameters (sent from the form)
         year = int(request.form.get('year'))
         week = int(request.form.get('week'))
+        unit = request.form.get('unit', "")
 
         # If no inputs provided, show page with form (GET request)
         if not year or not week:
             return render_template('payroll_summary.html')
         try:
             # get data from the function
-            data, deductions_data, aggregated_data = get_payroll_summary(year, week)
-            print(deductions_data)
+            data, deductions_data, aggregated_data = get_payroll_summary(year, week, unit)
             # pass all the data to the payroll summary template for displaying
             return render_template('payroll_summary.html', data=data, deductions_data=deductions_data,
-                                   aggregated_data=aggregated_data)
+                                   aggregated_data=aggregated_data, unit_data=unit_data)
         except Exception as e:
             flash(f"An error occurred {e}", 'danger')
             return redirect(url_for('payroll_summary'))
-    return render_template('payroll_summary.html')
+    return render_template('payroll_summary.html', unit_data=unit_data)
 
 
 @app.route('/generate_excel')

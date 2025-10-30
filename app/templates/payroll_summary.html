@@ -23,28 +23,40 @@
     <form action="{{ url_for('payroll_summary') }}" method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <div class="row g-3 align-items-end">
+        <div class=" align-items-end">
+            <div class="row">
+                <!-- Year Selector -->
+                <div class="col-md-3">
+                    <label for="year" class="form-label">Select Year</label>
+                    <select id="year" name="year" class="form-control">
+                        <option value="">-- Select Year --</option>
+                        {% for y in range(2023, 2026) %}
+                            <option value="{{ y }}">{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <!-- Year Selector -->
-            <div class="col-md-3">
-                <label for="year" class="form-label">Select Year</label>
-                <select id="year" name="year" class="form-control">
-                    <option value="">-- Select Year --</option>
-                    {% for y in range(2023, 2026) %}
-                        <option value="{{ y }}">{{ y }}</option>
-                    {% endfor %}
-                </select>
+                <!-- Week Selector (Shows Week Number + Dates) -->
+                <div class="col-md-3">
+                    <label for="week" class="form-label">Select Week</label>
+                    <select id="week" name="week" class="form-control">
+                        <option value="">-- Select Week --</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="unit" class="form-label">Select Unit</label>
+                    <select name="unit" id="unit" class="form-control">
+                        <option value="">All units</option>
+                        {% for data in unit_data %}
+                            <option value="{{ data[0] }}">{{ data[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
-            <!-- Week Selector (Shows Week Number + Dates) -->
-            <div class="col-md-4">
-                <label for="week" class="form-label">Select Week</label>
-                <select id="week" name="week" class="form-control">
-                    <option value="">-- Select Week --</option>
-                </select>
-            </div>
-
-            <!-- View Summary Button -->
+            <div class="row g-3 mt-1">
+                <!-- View Summary Button -->
             <div class="col-md-2">
                 <button class="btn btn-dark w-100" id="">
                     <i class="bi bi-funnel"></i> View Summary
@@ -55,6 +67,8 @@
             <div class="col-md-2">
                 <a href="" type="button" class="btn btn-success w-100" id="downloadBtn">Download</a>
             </div>
+            </div>
+
         </div>
     </form>
 
