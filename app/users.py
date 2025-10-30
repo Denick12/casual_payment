@@ -316,8 +316,8 @@ def generate_excel():
         default_sheet = wb["Sheet"]
         wb.remove(default_sheet)
 
-    cursor.execute("select property_code, unit_name from `e-tamarind`.units where unit_name != %s and unit_name != %s ",
-                   ('TCS', 'Tamarind Village'))
+    cursor.execute("select property_code, unit_name from `e-tamarind`.units where unit_name != %s ",
+                   'Tamarind Village')
     units = cursor.fetchall()
     cursor.close()
     conn.close()
