@@ -78,8 +78,8 @@ def list_upload(list_category):
                     iso_year, iso_week, iso_weekday = date_obj.isocalendar()
 
                     # Required columns
-                    required_columns = {'Staff No.', 'Tips & Incentives', 'Gross', 'Shif', 'Nssf', 'Housing Levy',
-                                        'Advances', 'Overpayment', 'Pending Bills', 'Total Dedution',
+                    required_columns = {'Staff No.', 'Daily Rate', 'Tips & Incentives', 'Gross', 'Shif', 'Nssf',
+                                        'Housing Levy', 'Advances', 'Overpayment', 'Pending Bills', 'Total Dedution',
                                         'Housing Levy Refund', 'Paye',
                                         }
                     # Iterate over each sheet
@@ -92,6 +92,7 @@ def list_upload(list_category):
                             for index, row in data.iloc[:-1].iterrows():
                                 # print(index)
                                 user_id = row['Staff No.']
+                                daily_rate = row['Daily Rate']
                                 tips = row['Tips & Incentives']
                                 gross = row['Gross']
                                 paye = row['Paye']
@@ -105,11 +106,12 @@ def list_upload(list_category):
                                 housing_levy_refund = row['Housing Levy Refund']
 
                                 # Insert into attendance table
-                                cursor.execute("insert into payroll_summary (staff_no, tips, gross, paye, shif, nssf, "
+                                cursor.execute("insert into payroll_summary (staff_no, daily_rate, tips, gross, "
+                                               "paye, shif, nssf, "
                                                "housing_levy, advances, overpayment, pending_bills, total_deduction, "
                                                "housing_levy_refund, week, year)"
-                                               "values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                                               (user_id, tips, gross, paye, shif, nssf, housing_levy, advances,
+                                               "values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                                               (user_id, daily_rate, tips, gross, paye, shif, nssf, housing_levy, advances,
                                                 overpayment, pending_bills, total_deduction, housing_levy_refund,
                                                 iso_week, iso_year))
                             conn.commit()
@@ -171,17 +173,20 @@ def get_payroll_summary(year, week, unit):
                            f", "
                            f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
                            "date_format(%s, '%%m/%%e/%%Y'), accounts.account_code, attendance_records.user_id, name, "
-                           "sum(payment_rate), journal_marker, property_code, department, sub_department "
+                           "sum(daily_rate), journal_marker, property_code, department, sub_department "
                            "from attendance_records "
                            "join casuals on attendance_records.user_id = casuals.user_id "
                            "join accounts_mapping on casuals.unit = accounts_mapping.unit_id "
                            "join accounts on accounts_mapping.account_id = accounts.account_id "
                            "join journals on journals.journal_id = accounts_mapping.journal_id "
                            "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
+                           "join payroll_summary on attendance_records.user_id = payroll_summary.staff_no "
                            "where status = %s and date between %s and %s and account_name = %s "
+                           "and week = %s and year = %s "
                            f"and units.unit_id {operator} %s "
                            "group by user_id",
-                           (*[last_day_date] * 7, 'P', first_day_of_the_week, last_day_date, 'Basic Salary', value))
+                           (*[last_day_date] * 7, 'P', first_day_of_the_week, last_day_date, 'Basic Salary',
+                            week, year, value))
             first_range = cursor.fetchall()
             # required date format = 'date month_name 2025'
             sum_of_first_range = [last_day_date.strftime('%e %B %Y'), sum(row[6] for row in first_range)]
@@ -192,18 +197,20 @@ def get_payroll_summary(year, week, unit):
                            f", "
                            f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
                            "date_format(%s, '%%m/%%e/%%Y'), accounts.account_code, attendance_records.user_id, name, "
-                           "sum(payment_rate), journal_marker, property_code, department, sub_department "
+                           "sum(daily_rate), journal_marker, property_code, department, sub_department "
                            "from attendance_records "
                            "join casuals on attendance_records.user_id = casuals.user_id "
                            "join casual_payments.accounts_mapping on casuals.unit = accounts_mapping.unit_id "
                            "join accounts on accounts_mapping.account_id = accounts.account_id "
                            "join journals on journals.journal_id = accounts_mapping.journal_id "
                            "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
+                           "join payroll_summary on attendance_records.user_id = payroll_summary.staff_no "
                            "where status = %s and date between %s and %s and account_name = %s "
+                           "and week = %s and year = %s "
                            f"and units.unit_id {operator} %s "
                            "group by user_id ",
                            (*[last_day_of_the_week] * 7, 'P', first_day_of_following_month, last_day_of_the_week,
-                            'Basic Salary', value))
+                            'Basic Salary', week, year, value))
             second_range = cursor.fetchall()
             # required date format = 'date month_name 2025'
             sum_of_second_range = sum(row[6] for row in second_range)
@@ -222,18 +229,20 @@ def get_payroll_summary(year, week, unit):
                            f", "
                            f"concat(year(%s), '/', lpad(month(%s) + 3, 3, '0'))) as period, "
                            "date_format(%s, '%%m/%%e/%%Y'), accounts.account_code, attendance_records.user_id, name, "
-                           "sum(payment_rate), journal_marker, property_code, department, sub_department "
+                           "sum(daily_rate), journal_marker, property_code, department, sub_department "
                            "from attendance_records "
                            "join casuals on attendance_records.user_id = casuals.user_id "
                            "join casual_payments.accounts_mapping on casuals.unit = accounts_mapping.unit_id "
                            "join accounts on accounts_mapping.account_id = accounts.account_id "
                            "join journals on journals.journal_id = accounts_mapping.journal_id "
                            "join `e-tamarind`.units on accounts_mapping.unit_id = units.unit_id "
+                           "join payroll_summary on casuals.user_id = payroll_summary.staff_no "
                            "where status = %s and date between %s and %s and account_name = %s "
-                           f"and units.unit_id {operator} %s "
+                           "and week = %s and year = %s "
+                           f"and units.unit_id {operator} %s"
                            "group by user_id ",
                            (*[last_day_of_the_week] * 7, 'P', first_day_of_the_week, last_day_of_the_week,
-                            'Basic Salary', value))
+                            'Basic Salary', week, year, value))
             all_range = cursor.fetchall()
             sum_of_all_ranges = sum(row[6] for row in all_range)
             data = {
